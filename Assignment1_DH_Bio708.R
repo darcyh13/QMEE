@@ -17,6 +17,11 @@ str(data)
 #omit NAs for simplicity for now
 data <- na.omit(data)
 
+#find mean wing lengths 
+data %>%
+  pull(WL) %>%
+  mean()
+
 #find mean of Wing Lengths of Ore 
 data %>%
   filter(background == "Ore") %>%
