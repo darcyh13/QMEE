@@ -1,0 +1,11 @@
+
+I want to investigate genetic interactions in two different genetic backgrounds between a  rhomboid mutation and mutations in the Epidermal Growth Factor Receptor, Blistered, Star, Spitz, and Argos. 
+
+rho[KG07115]is a strong mutation that causes a shortening of the longitudinal veins, while Egfr[k05115], bs[k07909], S[k09530], spi[s3547], and aos[W11] effect the shape of the wing. 
+
+I would expect there to be background dependence to occur between some of these genetic interactions as variants in each background will enhance or suppress these mutations, causing effects of the double mutant to be different from what you would expect from adding the effects of when the alleles occur independently. However, I would expect two weak mutations to be more additive and less background dependent as weak mutations are more robust and variants in the genetic backgrounds will have less impact on the phenotype, allowing for the effects to be additive. While moderate and strong mutations are less robust and variants will impact phenotype, allowing for epistatic interactions to occur. These variants differ in each background and that is why I expect to see differences between the magnitude and direction of epistatic interactions observed in SAM and ORE. 
+
+I am not sure how to test this statistically but I know that a mixed linear model will be used. This work has small quantitative differences, so I will have to be able to tell when there is an effect. I will first have to measure epistasis in these double mutants and then compare these interactions between different alleles and between the two backgrounds. I hope to observe changes in magnitude and direction of genetic interactions between alleles and between backgrounds. I'm not sure how to handle this statistically but hope to uncover some methods that will allow for me to do so.  
+
+
+ 
