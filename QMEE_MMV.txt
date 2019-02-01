@@ -1,0 +1,40 @@
+Assuming population is 100,000
+
+positive result: 100% of time for people with the virus and 5% of the time for people without the virus 
+
+prevalence: 1% in population of 100,000
+
+Q. You pick a person from this population at random, and test them, and the test is positive. What is the probability that they have MMV? 
+
+A.
+	pop = 100,000
+	prev = 0.01
+	false_pos = 0.05 
+
+	people with the virus that get a positive result in the pop:
+	100,000(0.01) = 1,000
+	people with the virus that get a negative result in the pop:
+	100,000(0.00) = 0.00
+
+	people without the virus in pop is:
+	100,000 - 1,000 = 99,000
+	people without the virus that get a positive result in the pop:
+	99,000(0.05) = 4,950
+	people without the virus that get a negative result in the pop:
+	99,000 - 4,950 = 94,050
+
+	1,000 + 4,950 = 5,950 test positive for the virus in pop 
+	1,000/5,950 = 0.168 of those testing positive have the virus
+
+	therefore, the probability that this person has the virus in 0.168 or 16.8%
+
+
+Q. You learn that your friend has a positive rapid test for MMV. What do you tell them?
+
+A. Due to the fact that it is a viral infection, I would ask if they have been around anyone that cannot control their urge to make mathematical models, as viral infections can be spread by contact with someone infected. In the event that they have, I would say this probably increases their chances of it being a true positive result. However, in the event they don't think they have had contact with someone infected I would say that they could have made contact and aren't aware but if they haven't that they may have had a false positive result and that they have 16.8% chance of having the disease. 
+
+If they do in fact get the disease I would ask them to spread it to me so I can be successful in getting my masters. 
+	  
+
+	
+	
