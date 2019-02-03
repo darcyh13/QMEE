@@ -1,33 +1,49 @@
 library("tidyverse")
-setwd("~/Data")
+###  setwd("~/Data")  ## BMB:  please don't!!
 Genetic_Background_Interactions <- read_csv("GeneticBackgroundVeinMutantInteractionsFinal.csv")
+## BMB: did you check the "112 parsing failures" ?
 
 #Change second gene to say WT if it does not have a second mutation -> get rid of NA in this column 
 Genetic_Background_Interactions$gene2[is.na(Genetic_Background_Interactions$gene2)] <- "wt"
 
 #change relevant columns to factors 
 columns_to_factors <- c(1:3,6:7)
+## BMB: should use column names, not numbers.
+## mutate_at() will work
 Genetic_Background_Interactions[,columns_to_factors] <- lapply(Genetic_Background_Interactions[,columns_to_factors], as.factor)
 
 #omit remaining NAs 
 Genetic_Background_Interactions <- na.omit(Genetic_Background_Interactions)
 
-#should backgrounds be seperated out?
+#should backgrounds be separated out?
 Genetic_Ore_Interactions <-Genetic_Background_Interactions %>% 
 filter(background == "Ore")
 
 Genetic_Sam_Interactions <-Genetic_Background_Interactions %>% 
   filter(background == "Sam")
+ 
+## BMB: did you do anything with these? if not, should probably clean up
 
-#want to see if gene combination has effect - dont know how to group by Gene1 and Gene2 - combine columns?
+
+#want to see if gene combination has effect - don't know how to group by Gene1 and Gene2 - combine columns?
 
 Genetic_Background_Interactions$genotype <- paste(Genetic_Background_Interactions$gene1,Genetic_Background_Interactions$gene2)
-Genetic_Background_Interactions
+
+## BMB: mutate would be more compact:
+Genetic_Background_Interactions <- mutate(Genetic_Background_Interactions,
+                                          genotype=interaction(gene1,gene2))
+## ... maybe rename Genetic_Background_Interactions to something a little shorter?
+
+## BMB: don't leave these print statements in code
+## Genetic_Background_Interactions
+
+## BMB: the interaction() function does this too (you can often use it on the fly)
 
 #make boxplot with both genes for L2
 #make multiple for each vein and wing length - facet wrap
 
-Genetic_Background_Interactions2 <- gather(Genetic_Background_Interactions, key="measure", value="value", c("L2", "L3","L4", "L5","WL"))
+Genetic_Background_Interactions2 <- gather(Genetic_Background_Interactions,
+                                           key="measure", value="value", c("L2", "L3","L4", "L5","WL"))
 
 WL_Genotype <- (ggplot(Genetic_Background_Interactions2,aes(x=genotype,y=value,
                                                            colour=background))
@@ -48,14 +64,18 @@ print(WL_Genotype)
 #bar graph with Egfr_Bs, Egfr_wt, Bs_wt, wt
 #should be able to figure out way to facet_wrap with all veins and wing length
 
+## BMB: consider (1) flipping axes (coord_flip() doesn't work with facets, need
+##  horiz boxplots from ggstance::geom_boxploth()); (2) order genotypes in a more
+##  useful way than alphabetical?
+
+
 #lets look at L4 - looked interesting in boxplot 
 
-Egfr_Bs_values %>% 
+Genetic_Background_Interactions %>%
+## Egfr_Bs_values %>% 
   group_by(genotype, background) %>% 
   summarise(Average_L4_Length = mean(L4)) %>% 
-  ungroup() %>% 
-  
-  
+    ungroup() %>%
   ggplot(mapping = aes(x=genotype, y=Average_L4_Length, fill = genotype)) +
   geom_col() +
   scale_y_continuous(name = "Average L4 Length") +
@@ -64,8 +84,14 @@ Egfr_Bs_values %>%
   ggtitle('Genetic Background Interactions in Vein Mutations') +
   theme(plot.background = element_rect(fill = 'grey'))
 
+##something interesting in Sam background - doesn't appear to be additive - suppressor effect - but is this significant?
 
-#something interesting in Sam background - doesn't appear to be additive - suppressor effect - but is this signifcant? 
+##  BMB: I don't know if I'm looking at the correct plot, since your code wasn't reproducible.
+## This looks quadratic, but maybe that's a coincidence because of alphabetical order??
+## Can you explain more connecting the plots with the science?
+## You didn't say much about your graphical choices.
+
+## score: 1.5 (please work harder to make your code reproducible).  Please let me know if I missed something obvious: if you re-run this from a clean session, does it work???
 
 
 
