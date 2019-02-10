@@ -7,5 +7,5 @@ I would expect there to be background dependence to occur between some of these 
 
 I am not sure how to test this statistically but I know that a mixed linear model will be used. This work has small quantitative differences, so I will have to be able to tell when there is an effect. I will first have to measure epistasis in these double mutants and then compare these interactions between different alleles and between the two backgrounds. I hope to observe changes in magnitude and direction of genetic interactions between alleles and between backgrounds. I'm not sure how to handle this statistically but hope to uncover some methods that will allow for me to do so.  
 
-
+JD: Nice science, but you could have tried to come up with some philosophy behind a statistical test. I agree that it's hard. Week grade good (2/3)
  
