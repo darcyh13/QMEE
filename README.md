@@ -30,7 +30,7 @@ Goals: (1)Identify non-additive genetic interactions and (2)examine if these int
 
 Investigations: 
 (1) Use a general linear model to observe double mutants and see if there is epistasis occuring
--epistatic in the sense the effects of the double mutant are different from what you would expect from the adding the effects of when the alleles occur onindependently.
+-epistatic in the sense the effects of the double mutant are different from what you would expect from the adding the effects of when the alleles occur independently.
 
 replicable components:
 (1) four replicates were conducted when preforming experiment and gathering data. 

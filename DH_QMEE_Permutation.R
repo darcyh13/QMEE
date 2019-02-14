@@ -166,7 +166,7 @@ mean(abs(res)>=abs(obs))
 
 
 
-t.test(L3~background,data=Genetic_Background_Interactions,var.equal=TRUE)
+t.tes_backgrounds <-t.test(L3~background,data=Genetic_Background_Interactions,var.equal=TRUE)
 
 
 #there is real differences between backgrounds for L3 length in dataset 
