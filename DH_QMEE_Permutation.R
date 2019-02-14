@@ -80,11 +80,11 @@ for (i in 1:nsim) {
     mean(bdat[bdat$genotype=="wt.rho","L3"])
 }
 
-Egfr_L3 <- Genetic_Ore_Interactions[Genetic_Ore_Interactions$genotype=="Egfr.rho","L3"]
-Egfr_L3 <- mean(Egfr_L3$L3)
-wt_L3 <- Genetic_Ore_Interactions[Genetic_Ore_Interactions$genotype=="wt.rho","L3"]
-wt_L3 <- mean(wt_L3$L3)
-obs <- Egfr_L3- wt_L3
+Egfr_L3_ORE <- Genetic_Ore_Interactions[Genetic_Ore_Interactions$genotype=="Egfr.rho","L3"]
+Egfr_L3_ORE <- mean(Egfr_L3_ORE$L3)
+wt_L3_ORE <- Genetic_Ore_Interactions[Genetic_Ore_Interactions$genotype=="wt.rho","L3"]
+wt_L3_ORE <- mean(wt_L3_ORE$L3)
+obs <- Egfr_L3_ORE- wt_L3_ORE
 ## append the observed value to the list of results
 res <- c(res,obs)
 
@@ -108,11 +108,11 @@ for (i in 1:nsim) {
     mean(bdat[bdat$genotype=="wt.rho","L3"])
 }
 
-Sam_L3 <- Genetic_Sam_Interactions[Genetic_Sam_Interactions$genotype=="Egfr.rho","L3"]
-Sam_L3 <- mean(Sam_L3$L3)
-wt_L3 <- Genetic_Sam_Interactions[Genetic_Sam_Interactions$genotype=="wt.rho","L3"]
-wt_L3 <- mean(wt_L3$L3)
-obs <- wt_L3 - Sam_L3
+Egfr_L3_SAM <- Genetic_Sam_Interactions[Genetic_Sam_Interactions$genotype=="Egfr.rho","L3"]
+Egfr_L3_SAM <- mean(Egfr_L3_SAM$L3)
+wt_L3_SAM <- Genetic_Sam_Interactions[Genetic_Sam_Interactions$genotype=="wt.rho","L3"]
+wt_L3_SAM <- mean(wt_L3_SAM$L3)
+obs <- wt_L3_SAM - Sam_L3_SAM
 ## append the observed value to the list of results
 res <- c(res,obs)
 
@@ -151,9 +151,9 @@ for (i in 1:nsim) {
 
 Sam_L3 <- Genetic_Background_Interactions[Genetic_Background_Interactions$background=="Sam","L3"]
 Sam_L3 <- mean(Sam_L3$L3)
-Ore_L3 <- Genetic_Background_Interactions[Genetic_Background_Interactions$genotype=="Sam","L3"]
+Ore_L3 <- Genetic_Background_Interactions[Genetic_Background_Interactions$background=="Ore","L3"]
 Ore_L3 <- mean(Ore_L3$L3)
-obs <- Egfr_L3- wt_L3
+obs <- Ore_L3 - Sam_L3
 ## append the observed value to the list of results
 res <- c(res,obs)
 
