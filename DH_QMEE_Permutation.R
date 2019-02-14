@@ -171,4 +171,5 @@ t.tes_backgrounds <-t.test(L3~background,data=Genetic_Background_Interactions,va
 
 #there is real differences between backgrounds for L3 length in dataset 
 
+#I am concerned there is a problem with observed - don't know if something is going wrong and how to fix 
 
