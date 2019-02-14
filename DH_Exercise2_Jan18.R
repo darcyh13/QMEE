@@ -4,7 +4,7 @@ library("tidyverse")
 
 GeneticBackground_Interactions <- read_csv("GeneticBackgroundVeinMutantInteractionsFinal.csv")
 #112 parsing failures - Due to expected vs actual 
-#When I use read.csv it is adding rows(ask about this)
+#When I use read.csv it is adding rows(ask about this) - no format errors in csv
 
 #str(GeneticBackground_Interactions)
 #head(GeneticBackground_Interactions)
@@ -32,9 +32,7 @@ GeneticBackground_Interactions %>%
   ggplot(aes(value)) +
   facet_wrap(~ key, scales = "free") +
   geom_histogram()
-
 #looks reasonable
-
 
 
 #save(GeneticBackground_Interactions, file = "GeneticBackground_Interactions.csv")

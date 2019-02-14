@@ -1,72 +1,124 @@
 library("tidyverse")
-setwd("~/Data")
+
 Genetic_Background_Interactions <- read_csv("GeneticBackgroundVeinMutantInteractionsFinal.csv")
 
 #Change second gene to say WT if it does not have a second mutation -> get rid of NA in this column 
 Genetic_Background_Interactions$gene2[is.na(Genetic_Background_Interactions$gene2)] <- "wt"
 
+#only want to deal with two genes for now, not three
+Genetic_Background_Interactions <- mutate(Genetic_Background_Interactions,
+                                          genotype=interaction(gene1, rhomboid))
+
 #change relevant columns to factors 
-columns_to_factors <- c(1:3,6:7)
+columns_to_factors <- c(1:4,6:7,13)
 Genetic_Background_Interactions[,columns_to_factors] <- lapply(Genetic_Background_Interactions[,columns_to_factors], as.factor)
 
 #omit remaining NAs 
 Genetic_Background_Interactions <- na.omit(Genetic_Background_Interactions)
 
-#should backgrounds be seperated out?
+#should backgrounds be seperated out -for now yes
 Genetic_Ore_Interactions <-Genetic_Background_Interactions %>% 
-filter(background == "Ore")
+filter(background == "Ore") %>%
+  select(L3, genotype) 
+
 
 Genetic_Sam_Interactions <-Genetic_Background_Interactions %>% 
-  filter(background == "Sam")
+  filter(background == "Sam") %>%
+  select(L3, genotype)
 
-#want to see if gene combination has effect - dont know how to group by Gene1 and Gene2 - combine columns?
 
-Genetic_Background_Interactions$genotype <- paste(Genetic_Background_Interactions$gene1,Genetic_Background_Interactions$gene2)
-Genetic_Background_Interactions
-
-#make boxplot with both genes for L2
-#make multiple for each vein and wing length - facet wrap
-
-Genetic_Background_Interactions2 <- gather(Genetic_Background_Interactions, key="measure", value="value", c("L2", "L3","L4", "L5","WL"))
-
-WL_Genotype <- (ggplot(Genetic_Background_Interactions2,aes(x=genotype,y=value,
-                                                           colour=background))
-                + geom_boxplot(outlier.colour=NULL)  ## set outlier points to same colour as boxes
-                + labs(y="L2 Vein Length")
-                +theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
-                +facet_wrap(~ measure, scales="free")
-                +ggtitle("Genetic Background Interactions in Vein Mutations")
-                +theme(plot.title = element_text(size=10, face="bold", 
-                                                 margin = margin(10, 0, 10, 0))) +
-                  theme(plot.background = element_rect(fill = 'grey'))
-                
+(ggplot(Genetic_Sam_Interactions,aes(genotype, L3))
+  + geom_boxplot()
+  + stat_sum(colour="darkgray",alpha=0.5)
+  + scale_size(breaks=1:2, range=c(3,6))
 )
 
-print(WL_Genotype)
 
-#lets take closer look at relationship identified from boxplot 
-#bar graph with Egfr_Bs, Egfr_wt, Bs_wt, wt
-#should be able to figure out way to facet_wrap with all veins and wing length
-
-#lets look at L4 - looked interesting in boxplot 
-
-Egfr_Bs_values %>% 
-  group_by(genotype, background) %>% 
-  summarise(Average_L4_Length = mean(L4)) %>% 
-  ungroup() %>% 
-  
-  
-  ggplot(mapping = aes(x=genotype, y=Average_L4_Length, fill = genotype)) +
-  geom_col() +
-  scale_y_continuous(name = "Average L4 Length") +
-  scale_x_discrete("Genotype") +
-  facet_grid(.~background) +
-  ggtitle('Genetic Background Interactions in Vein Mutations') +
-  theme(plot.background = element_rect(fill = 'grey'))
+(ggplot(Genetic_Ore_Interactions,aes(genotype, L3))
+  + geom_boxplot()
+  + stat_sum(colour="darkgray",alpha=0.5)
+  + scale_size(breaks=1:2, range=c(3,6))
+)
 
 
-#something interesting in Sam background - doesn't appear to be additive - suppressor effect - but is this signifcant? 
 
+#Egfr.rho in L3 may be a good one to start with - want to do this with only one gene(that looks interesting) right now 
+#will see test gene and then background and gene 
+
+
+Ore_Egfr <- Genetic_Ore_Interactions %>%
+  filter(genotype %in% c("wt.rho", "Egfr.rho"))
+
+Sam_Egfr <- Genetic_Sam_Interactions %>%
+  filter(genotype %in% c("wt.rho", "Egfr.rho"))
+
+
+
+
+set.seed(13) ## for reproducibility
+nsim <- 1000
+res <- numeric(nsim) ## set aside space for results
+for (i in 1:nsim) {
+  ## standard approach: scramble response value
+  perm <- sample(nrow(Ore_Egfr))
+  bdat <- transform(Ore_Egfr, L3=L3[perm])
+  ## compute & store difference in means; store the value
+  res[i] <- mean(bdat[bdat$genotype=="Egfr.rho","L3"])-
+    mean(bdat[bdat$genotype=="wt.rho","L3"])
+}
+
+Egfr_L3 <- Ore_Egfr[Ore_Egfr$genotype=="Egfr.rho","L3"]
+Egfr_L3 <- mean(Egfr_L3$L3)
+wt_L3 <- Ore_Egfr[Ore_Egfr$genotype=="wt.rho","L3"]
+wt_L3 <- mean(wt_L3$L3)
+obs <- Egfr_L3- wt_L3
+## append the observed value to the list of results
+res <- c(res,obs)
+
+hist(res,col="gray",las=1,main="")
+abline(v=obs,col="red")
+
+
+2*mean(res>=obs)  
+mean(abs(res)>=abs(obs))
+
+
+set.seed(13) ## for reproducibility
+nsim <- 1000
+res <- numeric(nsim) ## set aside space for results
+for (i in 1:nsim) {
+  ## standard approach: scramble response value
+  perm <- sample(nrow(Sam_Egfr))
+  bdat <- transform(Sam_Egfr, L3=L3[perm])
+  ## compute & store difference in means; store the value
+  res[i] <- mean(bdat[bdat$genotype=="Egfr.rho","L3"])-
+    mean(bdat[bdat$genotype=="wt.rho","L3"])
+}
+
+Sam_L3 <- Sam_Egfr[Sam_Egfr$genotype=="Egfr.rho","L3"]
+Sam_L3 <- mean(Sam_L3$L3)
+wt_L3 <- Sam_Egfr[Sam_Egfr$genotype=="wt.rho","L3"]
+wt_L3 <- mean(wt_L3$L3)
+obs <- Sam_L3- wt_L3
+## append the observed value to the list of results
+res <- c(res,obs)
+
+hist(res,col="gray",las=1,main="")
+abline(v=obs,col="red")
+
+2*mean(res<=obs)  
+mean(abs(res)<=abs(obs))
+
+
+#there is significant differences between genotypes in SAM but not ORE. 
+
+(tt <- t.test(L3~genotype,data=Ore_Egfr,var.equal=TRUE))
+
+(tt <- t.test(L3~genotype,data=Sam_Egfr,var.equal=TRUE))
+
+#there is significant differences between genotypes in SAM but not ORE. 
+
+#now I want to see if theres is a difference between in 
 
 
 
