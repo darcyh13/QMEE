@@ -15,7 +15,8 @@ Genetic_Background_Interactions <- mutate(Genetic_Background_Interactions,
                                           genotype=interaction(gene1, rhomboid))
 
 #change relevant columns to factors 
-columns_to_factors <- c(1:4,6:7,13)
+
+columns_to_factors <- c("background", "gene1", "gene2", "rhomboid", "sex", "individual", "genotype")
 Genetic_Background_Interactions[,columns_to_factors] <- lapply(Genetic_Background_Interactions[,columns_to_factors], as.factor)
 
 #omit remaining NAs 
