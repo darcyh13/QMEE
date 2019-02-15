@@ -190,5 +190,6 @@ t.test_backgrounds <-t.test(L3~background,data=Genetic_Background_Interactions,v
 t.test_backgrounds
 
 #there is real differences between backgrounds for L3 length in dataset 
-
-
+#I want to eventually be able too see how interaction changes between backgrounds - for example is Egfr acting as an enhancer to rho or are differences due to starting points in each background 
+#I feel comfortable concluding that there is differences  in L3 length between Egfr.rho and wt.rho genotypes in SAM but not ORE background
+#I also feel comfortable concluding that there is differences between SAM and ORE for L3 length when all genotypes are included 
