@@ -1,3 +1,8 @@
+#hypothesis (1) - is there differences between genotypes for L3 vein length. I want to look at a specific interesting relationship 
+#hypothesis (2) - is there differences between backgrounds across all genotypes for L3 vein length 
+#using same tests - brute force permutation, which is efficent but clear to understand and t-test which seems to be a good fit here as I want to compare two means. A t-test is a good way to determine whether there is a significant difference between the means of two groups.
+#does it make sense to use others tests for these questions? 
+
 library("tidyverse")
 
 Genetic_Background_Interactions <- read_csv("GeneticBackgroundVeinMutantInteractionsFinal.csv")
@@ -32,16 +37,18 @@ Genetic_Sam_Interactions <-Genetic_Background_Interactions %>%
 install.packages("rcompanion")
 library(rcompanion)
 
-pairwisePermutationTest(L3 ~ genotype,
+Pairwise_ORE <- pairwisePermutationTest(L3 ~ genotype,
                         data = Genetic_Ore_Interactions,
                         method="fdr")
+Pairwise_ORE
 
 #difference between aos.rho and wt.rho in ORE
 #not many differences between double mutants and single mutation in rho
 
-pairwisePermutationTest(L3 ~ genotype,
+Pairwise_SAM <-pairwisePermutationTest(L3 ~ genotype,
                         data = Genetic_Sam_Interactions,
                         method="fdr")
+Pairwise_SAM 
 
 #differences between aos.rho and wt.rho, Bs.rho and wt.rho, Egfr.rho and wt.rho, S.rho and wt.rho, and Spi.rho and wt.rho in SAM.
 #this tells me there is more differences between double mutants and single mutant rho in SAM than in ORE
@@ -95,6 +102,15 @@ abline(v=obs,col="red")
 2*mean(res>=obs)  
 mean(abs(res)>=abs(obs))
 
+#t-test can only use two levels 
+
+Genetic_Ore_Interactions2 <-Genetic_Ore_Interactions %>% 
+  filter( genotype  %in% c("wt.rho", "Egfr.rho"))
+  
+t.test(L3~genotype,data=Genetic_Ore_Interactions2,var.equal=TRUE)
+
+#not a difference in dataset between wt.rho and Egfr.rho in ORE
+
 #SAM background Egfr.rho and wt.rho
 set.seed(13) ## for reproducibility
 nsim <- 1000
@@ -112,7 +128,7 @@ Egfr_L3_SAM <- Genetic_Sam_Interactions[Genetic_Sam_Interactions$genotype=="Egfr
 Egfr_L3_SAM <- mean(Egfr_L3_SAM$L3)
 wt_L3_SAM <- Genetic_Sam_Interactions[Genetic_Sam_Interactions$genotype=="wt.rho","L3"]
 wt_L3_SAM <- mean(wt_L3_SAM$L3)
-obs <- wt_L3_SAM - Sam_L3_SAM
+obs <- wt_L3_SAM - Egfr_L3_SAM
 ## append the observed value to the list of results
 res <- c(res,obs)
 
@@ -123,11 +139,16 @@ abline(v=obs,col="red")
 2*mean(res>=obs)  
 mean(abs(res)>=abs(obs))
 
+Genetic_Sam_Interactions2 <-Genetic_Sam_Interactions %>% 
+  filter( genotype  %in% c("wt.rho", "Egfr.rho"))
+
+t.test(L3~genotype,data=Genetic_Sam_Interactions2,var.equal=TRUE)
+
 
 #Confirming again that there is real differences in the L3 vein length between Egfr.rho and wt.rho genotypes in SAM but not ORE. 
 #Egfr may act as enhancer of rho in SAM but does not have same interaction in ORE
 
-#I now want to see if there is background effects for L3 
+#I now want to see if there is background effects for L3 between genotypes 
 
 
 (ggplot(Genetic_Background_Interactions,aes(background, L3))
@@ -165,11 +186,9 @@ abline(v=obs,col="red")
 mean(abs(res)>=abs(obs))
 
 
-
-t.tes_backgrounds <-t.test(L3~background,data=Genetic_Background_Interactions,var.equal=TRUE)
-
+t.test_backgrounds <-t.test(L3~background,data=Genetic_Background_Interactions,var.equal=TRUE)
+t.test_backgrounds
 
 #there is real differences between backgrounds for L3 length in dataset 
 
-#I am concerned there is a problem with observed - don't know if something is going wrong and how to fix 
 
