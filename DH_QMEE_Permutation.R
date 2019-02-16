@@ -1,7 +1,8 @@
 #hypothesis (1) - is there differences between genotypes for L3 vein length. I want to look at a specific interesting relationship 
 #hypothesis (2) - is there differences between backgrounds across all genotypes for L3 vein length 
-#using same tests - brute force permutation, which is efficent but clear to understand and t-test which seems to be a good fit here as I want to compare two means. A t-test is a good way to determine whether there is a significant difference between the means of two groups.
+#using same tests - brute force permutation, which is efficient but clear to understand and t-test which seems to be a good fit here as I want to compare two means. A t-test is a good way to determine whether there is a significant difference between the means of two groups.
 #does it make sense to use others tests for these questions? 
+
 
 library("tidyverse")
 
@@ -9,6 +10,7 @@ Genetic_Background_Interactions <- read_csv("GeneticBackgroundVeinMutantInteract
 
 #Change second gene to say WT if it does not have a second mutation -> get rid of NA in this column 
 Genetic_Background_Interactions$gene2[is.na(Genetic_Background_Interactions$gene2)] <- "wt"
+## also see ?replace
 
 #only want to deal with two genes for now, not three
 Genetic_Background_Interactions <- mutate(Genetic_Background_Interactions,
@@ -19,10 +21,12 @@ Genetic_Background_Interactions <- mutate(Genetic_Background_Interactions,
 columns_to_factors <- c("background", "gene1", "gene2", "rhomboid", "sex", "individual", "genotype")
 Genetic_Background_Interactions[,columns_to_factors] <- lapply(Genetic_Background_Interactions[,columns_to_factors], as.factor)
 
+## BMB: also see mutate_at
+
 #omit remaining NAs 
 Genetic_Background_Interactions <- na.omit(Genetic_Background_Interactions)
 
-#seperate out backgrounds - want to observe individually 
+#separate out backgrounds - want to observe individually 
 Genetic_Ore_Interactions <-Genetic_Background_Interactions %>% 
   filter(background == "Ore") %>%
   select(L3, genotype) 
@@ -73,7 +77,7 @@ Pairwise_SAM
 )
 
 #confirming Egfr.rho in L3 may be a good one to start with - want to do this with only one gene(that looks interesting) right now 
-#Egfr.rho has different effect on L3 than just wt.rho - may enhance rho in SAM but not ORE but is this signifcant?
+#Egfr.rho has different effect on L3 than just wt.rho - may enhance rho in SAM but not ORE but is this significant?
 
 #Ore background Egfr.rho and wt.rho
 set.seed(13) ## for reproducibility
