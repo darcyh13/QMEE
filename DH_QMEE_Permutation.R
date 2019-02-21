@@ -35,7 +35,7 @@ Genetic_Sam_Interactions <-Genetic_Background_Interactions %>%
 
 #I want to explore to see if there are real differences between genotypes in each background - does this code suffice? 
 
-install.packages("rcompanion")
+#install.packages("rcompanion")
 library(rcompanion)
 
 Pairwise_ORE <- pairwisePermutationTest(L3 ~ genotype,
