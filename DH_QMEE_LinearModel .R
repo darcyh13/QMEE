@@ -55,7 +55,7 @@ plot(L3 ~ genotype + sex + genotype:sex, data = Genetic_Background_Interactions)
 abline(lm_geno_L3)
 
 #install.packages("dotwhisker")
-#library(dotwhisker)
+library(dotwhisker)
 dwplot(lm_geno_L3)
 #used to visualize regression model 
 #you can see possible effects of genotypes and genotypes with sex 
