@@ -85,7 +85,8 @@ print(dwplot(j3))
 
 #Disscuss prior assumptions 
 #set priors to b_sex ~ dnorm(0,0.001) and  b_genotype[i] ~ dnorm(0,0.001)
-#assuming a normal distrubution : from results from qq plot 
+#assuming a normal distrubution 
+
 lm_geno_L3 <- lm(L3 ~ genotype + sex , data= Genetic_Ore_Interactions)
 plot(lm_geno_L3)
 
