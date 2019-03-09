@@ -1,19 +1,30 @@
 
 library("tidyverse")
+ ## BMB: you missed these, your code's not reproducible ...
+library("R2jags")
+library("broom.mixed")
+library("lattice")
+library("emdbook")
+library("dotwhisker")
 
 Genetic_Background_Interactions <- read_csv("GeneticBackgroundVeinMutantInteractionsFinal.csv")
 
 #Change second gene to say WT if it does not have a second mutation -> get rid of NA in this column 
 Genetic_Background_Interactions$gene2[is.na(Genetic_Background_Interactions$gene2)] <- "wt"
+## BMB: could also tidyverse this
+## %>% mutate(gene2=replace_na(gene2,"wt"))
 
 #only want to deal with two genes for now, not three
 Genetic_Background_Interactions <- mutate(Genetic_Background_Interactions,
                                           genotype=interaction(gene1, rhomboid))
 
+## BMB: use pipe to avoid repetitively typing Genetic_Background_Interactions
 #change relevant columns to factors 
 
 columns_to_factors <- c("background", "gene1", "gene2", "rhomboid", "sex", "individual", "genotype")
 Genetic_Background_Interactions[,columns_to_factors] <- lapply(Genetic_Background_Interactions[,columns_to_factors], as.factor)
+
+## BMB: mutate_at(columns_to_factors,as.factors)
 
 #omit remaining NAs 
 Genetic_Background_Interactions <- na.omit(Genetic_Background_Interactions)
@@ -49,11 +60,12 @@ OREdat2<-with(Genetic_Ore_Interactions,
 
 genomodel3 <- function() {
   for (i in 1:N) {
-    ## Poisson model
-    logmean[i] <- b_genotype[genotype[i]] ## predicted log(counts)
-    sexeff[i] <- b_sex*(sex[i]-1) 
-    pred[i] <- exp(logmean[i] + sexeff[i])       ## predicted counts
-    L3[i] ~ dnorm(pred[i], 0.001)
+      ## Poisson model
+      logmean[i] <- b_genotype[genotype[i]] ## predicted log(counts)
+      sexeff[i] <- b_sex*(sex[i]-1)
+      ## BMB: assuming equal sex effect across all genotypes?
+      pred[i] <- exp(logmean[i] + sexeff[i])       ## predicted counts
+      L3[i] ~ dnorm(pred[i], 0.001)
   }
   ## define priors in a loop
   for (i in 1:ngenotype) {
@@ -63,6 +75,10 @@ genomodel3 <- function() {
   
   b_sex ~ dnorm(0,0.001)
 }
+
+## BMB: this isn't a poisson model because you didn't use ~ dpois() ...
+## it's a log-link Gaussian model
+## main difference is that it will assume a *multiplicative* effect of sex
 
 j3 <- jags(data=OREdat2,
            inits=NULL,n.iter = 50000, n.thin = 100,
@@ -78,15 +94,22 @@ plot(j3)
 
 xyplot(mm2) #I think this looks ok - doesn't look like burnin needs to be adjusted
 
+
 densityplot(mm2) #This doesn't look perfect but I think it looks OK 
 
+## BMB: these do look a *little* dicey to me -- would expect these to
+## be smoother -- would probably run longer/thin in a real application
 print(dwplot(j3))
 
 
-#Disscuss prior assumptions 
+## BMB: these confidence intervals are incredibly wide. I suspect
+## something's wrong (but can't see anything obvious) ...
+
+#Discuss prior assumptions 
 #set priors to b_sex ~ dnorm(0,0.001) and  b_genotype[i] ~ dnorm(0,0.001)
 #assuming a normal distrubution 
 
+## BMB: this is a different model from what you fitted above
 lm_geno_L3 <- lm(L3 ~ genotype + sex , data= Genetic_Ore_Interactions)
 plot(lm_geno_L3)
 
@@ -94,3 +117,6 @@ plot(lm_geno_L3)
 #plots from linear model look like a good fit and although bayesian approach is a powerful appraoch I don't think I used it in a powerful sense. For example, priors were not specific but rather safe choices. To my understanding, a bayesian model with uninformative priors will not differ drastically (if at all) from maximum likelihood because data is not being strongly influenced by prior.I think this approach is a better fit when you have reason for strong priors . 
 
 
+## BMB: there are also complex-modeling cases where it's useful (e.g. mixed models)
+
+## score: 2.25
