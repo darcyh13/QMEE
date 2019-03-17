@@ -58,5 +58,4 @@ lm1<- lm(WL ~ genotype + background + sex, Genetic_Background_Interactions)
 
 anova(lmm1,lm1)
 
-#models look very similar. Therefore, replicate as a random effect is not very strong. 
-
+#models look very similar. Therefore, replicate as a random effect is not very strong. Even if it is not strong I dont know ( at least yet) of cons for including it. More information makes model make more accurate estimates. At some point models may not converge if you have too many variable but I did not run into this problem, at that point it would make sense to remove variables that do not have strong effect.
