@@ -29,6 +29,8 @@ Genetic_Ore_Interactions$genotype <- relevel(Genetic_Ore_Interactions$genotype, 
 lm_geno_L3 <- lm(L3 ~ genotype + sex + genotype:sex , data= Genetic_Ore_Interactions)
 
 
+## JD: It would be better practice to look at diagnostic plots before you look at P values.
+
 summary(lm_geno_L3)
 #RSE model is 0.3486 so you can say that you can predict L3 vein length on an individual with accuracy of 0.3486 with this model 
 #median is around 0 - this shold be the case of residuals 
@@ -36,7 +38,7 @@ summary(lm_geno_L3)
 #also gives estimated slope 
 #for all of the observed variation for L3 in dataset this model can account for 46.77% of variation
 
-
+## JD: This is a nice explanation of what you're trying to do, but it didn't quite work (drop1 gave you only the interaction)
 #this lets me see if genotype as a whole and sex together have influence rather than looking at each genotype and sex
 drop1(lm_geno_L3, test = "F")
 
@@ -49,6 +51,7 @@ plot(lm_geno_L3)
 
 #linear models looks to be a good fit 
 
+## JD: Not sure what you're trying to do with the abline; it looks like it misses the mark
 #this makes boxplot of L3 and genotype and a boxplot of L3 and sex - you can see both may have effects on L3
 par(mfrow=c(2,1))
 plot(L3 ~ genotype + sex + genotype:sex, data = Genetic_Background_Interactions)
@@ -70,11 +73,15 @@ plot(emmeans_test, comparisons = TRUE)
 
 #emmeans plot agrees with my hypothesis that genotypes influence length of vein 3 in Ore
 
+## JD: It would be fun to discuss the relationship between dwplot and emmeans
+## Also to control the order of the genotypes in both (and make them consistent!)
+
+## JD: Not sure I'm following this part.
 #how to check for unaccounted for variation 
 #shows what happens when data is permuted 
 #complete independence of observations? 
 acf(resid(lm_geno_L3))
 
-
+## JD Grade 2/3 (good)
 
 
