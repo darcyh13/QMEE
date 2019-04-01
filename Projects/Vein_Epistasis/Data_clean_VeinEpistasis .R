@@ -75,5 +75,26 @@ Vein_epistasis<- subset(Vein_epistasis, Vein_epistasis[12]>4)
   + scale_size(breaks=1:2, range=c(3,6))
 )
 
+
+#For some reason all the lenghts were created as factors and not numberic variables. 
+
+Veins_numeric <- c("L2", "L3", "L4", "L5", "WL")
+Vein_epistasis[,Veins_numeric] <- lapply(Vein_epistasis[,Veins_numeric], as.numeric)
+
+
+Vein_epistasis_scale <- (Vein_epistasis
+  %>% mutate(L2s = L2/WL)
+  %>% mutate(L2s = L3/WL)
+  %>% mutate(L2s = L4/WL)
+  %>% mutate(L2s = L5/WL)
+)
+
+wings <- Vein_epistasis_scale
+
+#We can add additional code here to filter for specific genes when we want to 
+
+ 
 write.csv(Vein_epistasis, file ="Vein_epistasis_clean.csv")
+save(wings, 
+     file = "clean_epistasis.rda")
 
