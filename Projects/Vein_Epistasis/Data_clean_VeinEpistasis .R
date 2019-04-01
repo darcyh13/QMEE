@@ -84,9 +84,9 @@ Vein_epistasis[,Veins_numeric] <- lapply(Vein_epistasis[,Veins_numeric], as.nume
 
 Vein_epistasis_scale <- (Vein_epistasis
   %>% mutate(L2s = L2/WL)
-  %>% mutate(L2s = L3/WL)
-  %>% mutate(L2s = L4/WL)
-  %>% mutate(L2s = L5/WL)
+  %>% mutate(L3s = L3/WL)
+  %>% mutate(L4s = L4/WL)
+  %>% mutate(L5s = L5/WL)
 )
 
 wings <- Vein_epistasis_scale
