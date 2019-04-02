@@ -96,5 +96,5 @@ wings <- Vein_epistasis_scale
  
 write.csv(Vein_epistasis, file ="Vein_epistasis_clean.csv")
 save(wings, 
-     file = "Projects/Vein_Epistasis/clean_epistasis.rda")
+     file = "clean_epistasis.rda")
 
