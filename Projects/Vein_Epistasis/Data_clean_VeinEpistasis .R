@@ -2,6 +2,8 @@
 library("tidyverse")
 Vein_epistasis <- read_csv("GeneticBackgroundVeinMutantInteractionsFinal.csv")
 
+
+
 #Change second gene to say wt if it does not have a second mutation -> get rid of NA in this column 
 Vein_epistasis$gene2[is.na(Vein_epistasis$gene2)] <- "wt"
 
