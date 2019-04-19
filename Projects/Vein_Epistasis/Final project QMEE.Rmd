@@ -51,6 +51,85 @@ Egfr = epidermal growth factor receptor
 3. Mixed model approach - a mixed model with a repeated measure of each vein for each individual.
 4. Multivariate mixed model - this approach is similar to approach 3. We want to compare results and ask which model is easier to interpret in the context of our biological question. 
 
+##Cleandata 
+
+```{r clean}
+library("tidyverse")
+Vein_epistasis <- read_csv("GeneticBackgroundVeinMutantInteractionsFinal.csv")
+#Change second gene to say wt if it does not have a second mutation -> get rid of NA in this column 
+Vein_epistasis$gene2[is.na(Vein_epistasis$gene2)] <- "wt"
+#change relevant columns to factors 
+columns_to_factors <- c("background", "gene1", "gene2", "rhomboid", "sex", "individual")
+Vein_epistasis[,columns_to_factors] <- lapply(Vein_epistasis[,columns_to_factors], as.factor)
+#omit NAs - indicates dead flies 
+Vein_epistasis <- na.omit(Vein_epistasis)
+
+#checking for any obvious outliers
+#hist
+Vein_epistasis %>%
+  keep(is.numeric) %>% 
+  gather() %>% 
+  ggplot(aes(value)) +
+  facet_wrap(~ key, scales = "free") +
+  geom_histogram()
+
+#might be outliers in L5 and WL 
+
+#boxplot for L5
+(ggplot(Vein_epistasis,aes(gene1, L5))
+  + geom_boxplot()
+  + stat_sum(colour="darkgray",alpha=0.5)
+  + scale_size(breaks=1:2, range=c(3,6))
+)
+
+#remove outlier 
+Vein_epistasis<- subset(Vein_epistasis, Vein_epistasis[11]<5)
+
+#double check outlier has been removed 
+
+(ggplot(Vein_epistasis,aes(gene1, L5))
+  + geom_boxplot()
+  + stat_sum(colour="darkgray",alpha=0.5)
+  + scale_size(breaks=1:2, range=c(3,6))
+)
+#boxplot for WL
+
+(ggplot(Vein_epistasis,aes(gene1, WL))
+  + geom_boxplot()
+  + stat_sum(colour="darkgray",alpha=0.5)
+  + scale_size(breaks=1:2, range=c(3,6))
+)
+
+#remove outlier 
+
+Vein_epistasis<- subset(Vein_epistasis, Vein_epistasis[12]>4)
+
+#double check outlier has been removed 
+
+(ggplot(Vein_epistasis,aes(gene1, WL))
+  + geom_boxplot()
+  + stat_sum(colour="darkgray",alpha=0.5)
+  + scale_size(breaks=1:2, range=c(3,6))
+)
+#For some reason all the lenghts were created as factors and not numberic variables. 
+
+Veins_numeric <- c("L2", "L3", "L4", "L5", "WL")
+Vein_epistasis[,Veins_numeric] <- lapply(Vein_epistasis[,Veins_numeric], as.numeric)
+
+#scale vein lengths by overall wing lengths 
+Vein_epistasis_scale <- (Vein_epistasis
+  %>% mutate(L2s = L2/WL)
+  %>% mutate(L3s = L3/WL)
+  %>% mutate(L4s = L4/WL)
+  %>% mutate(L5s = L5/WL)
+)
+
+wings <- Vein_epistasis_scale
+write.csv(Vein_epistasis, file ="Vein_epistasis_clean.csv")
+save(wings, 
+     file = "clean_epistasis.rda")
+```
+
 ##PCA 
 
 ```{r PCA}
@@ -60,3 +139,80 @@ Egfr = epidermal growth factor receptor
 ##Supervein 
 
 ```{r Supervein}
+#make new column with total vein length
+wings$supervein <- wings$L2s + wings$L3s + wings$L4s  + wings$L5s
+#subset so that gene2 equals wild-type. Only want to look at double mutants for now. 
+gene1only <- subset(wings, gene2 == "wt")
+#Look at data
+library(ggplot2)
+ggplot(data = gene1only, aes(x=gene1, y=supervein)) + geom_boxplot(aes(fill=background))
+library(lme4)
+#look at data to see if linear looks like it should reasonable fit 
+hist(wings$supervein)
+qqnorm(wings$supervein)
+#mixed linear model using glmmTMB package. Singular fit when using lmer. 
+library(glmmTMB)
+lmm1_sv <- glmmTMB(supervein ~ background*gene1*sex + (1|rep), data = gene1only)
+summary(lmm1_sv)
+#genes have effect which is what we would expect. Interesting that sex does as overall wing size has been scaled for, and even more interesting that interaction between background and sex has effect (meaning effect of sex behaves differently in background). 
+#check model 
+library(DHARMa)
+supervein_lmm1 <- simulateResiduals(lmm1_sv)
+plot(supervein_lmm1)
+#there is deviation for expected distrubution 
+#simulation outliers are highlighted as red stars. data points that are outside the range of simulated values. 
+#fit doesn't look aweome which is expected - indicates this is not a good way to handle data. 
+#inference
+library(car)
+Anova(lmm1_sv)
+#strong support there is sign effect of background and gene1 on supervein (This is predicted). What we care about is there looks to be significant effect of interaction of gene1 and background and background and sex. 
+
+#visual of effects
+library(effects)
+(eff <- allEffects(lmm1_sv))
+plot(eff)
+ 
+```
+
+Supervein approach is not a good approach. This was anticipated but preformed as an exploratory exercise. 
+
+##What does model liner mixed model look like for each vein individually? This is a substitute for supervein approach. 
+
+###Vein 2
+```{r vein 2}
+gene1only$gene1 <- relevel(gene1only$gene1, "wt")
+library(lme4)
+lmm1_L2s <- glmmTMB(L2s ~ background*gene1*sex + (1|rep), data = gene1only)
+summary(lmm1_L2s)
+Anova(lmm1_L2s)
+library(emmeans)
+emmip(lmm1_L2s, sex ~ background|gene1, CIs = T)
+```
+
+##vein 3
+```{r vein 3}
+lmm1_L3s <- glmmTMB(L3s ~ background*gene1*sex + (1|rep), data = gene1only)
+summary(lmm1_L3s)
+Anova(lmm1_L3s)
+emmip(lmm1_L3s, sex ~ background|gene1, CIs = T)
+
+```
+
+##vein 4
+```{r vein 4}
+lmm1_L4s <- glmmTMB(L4s ~ background*gene1*sex + (1|rep), data = gene1only)
+summary(lmm1_L4s)
+Anova(lmm1_L4s)
+emmip(lmm1_L4s, sex ~ background|gene1, CIs = T)
+```
+
+##vein 5
+```{r vein 5}
+lmm1_L5s <- glmmTMB(L5s ~ background*gene1*sex + (1|rep), data = gene1only)
+summary(lmm1_L5s)
+Anova(lmm1_L5s)
+emmip(lmm1_L5s, sex ~ background|gene1, CIs = T)
+
+```
+
+
