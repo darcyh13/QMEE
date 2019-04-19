@@ -1,0 +1,62 @@
+---
+title: "Final Project"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Vein Epistasis 
+
+
+A genetic interaction or epistasis can be defined in its simplest form as relationships between genes. However, this term can mean different things depending on your field and questions. 
+For this work, we will use this term to describe the interaction of genes at different loci that affect a phenotype.  Specifically, the interaction of a secondary mutation that enhances a focal mutation. 
+
+## Scientific Question: 
+##Does the magnitude of genetic interactions change in a background dependent manner?
+
+### What does this mean? 
+
+The phenotypic consequences of individual mutations are modulated by the wild-type genetic background in which they occur.The influence of wild-type genetic backgrounds also extends to interactions among mutations, but this needs to be explored further. 
+
+
+### How are we approaching this problem? 
+
+Examining epistatic interactions are experimentally, statistically, and computationally challenging and unfortunately there is no agreed upon way on how to handle such challenges. As such, our goal for this project is to use 4 different approaches to analyse our scientific question. This allows for us to explore different methods and see which we think is the best approach to answer our question. The best meaning taking into consideration overall fit of models, efficiency, output that allows for interpretation and so on. 
+
+
+### Dataset 
+
+* Data obtained from set of experimental crosses and data collected by Andrew Victory while an undergraduate at MSU in the Dworkin lab.
+* Looking at known genetic interactions by observing vein lengths in double and triple mutants in two common strains of Drosophila, Sam and Ore. 
+* All animals are also homozygous for a rhomboid mutation.
+
+Aos = argos,                                    S = star,
+Bs = blistered,                                 Spi = spitz,
+Egfr = epidermal growth factor receptor
+
+##Statistical Question:
+## Is there variance in vein length that can not be explained by the effect of background and the effect of gene1 and/or gene2? 
+
+###Choices we made: 
+
+* All vein lengths are scaled by overall wing length. 
+* We are using subsets of our data for most analysis - either individuals that are wild type at gene2 or individuals that are egfr gene 1 mutants and have a variant at gene 2
+
+##Our plan
+
+1. PCA to ask if the variance in vein lengths is correlated to inform the limitations in our other analysis
+2. Supervein analysis - if changes in all of the vein lengths are correlated, can we just add them together to create a ‘supervein’
+3. Mixed model approach - a mixed model with a repeated measure of each vein for each individual.
+4. Multivariate mixed model - this approach is similar to approach 3. We want to compare results and ask which model is easier to interpret in the context of our biological question. 
+
+##PCA 
+
+```{r PCA}
+
+```
+
+##Supervein 
+
+```{r Supervein}
