@@ -154,15 +154,16 @@ qqnorm(wings$supervein)
 #mixed linear model using glmmTMB package. Singular fit when using lmer. 
 library(glmmTMB)
 lmm1_sv <- glmmTMB(supervein ~ background*gene1*sex + (1|rep), data = gene1only)
-summary(lmm1_sv)
-#genes have effect which is what we would expect. Interesting that sex does as overall wing size has been scaled for, and even more interesting that interaction between background and sex has effect (meaning effect of sex behaves differently in background). 
 #check model 
 library(DHARMa)
 supervein_lmm1 <- simulateResiduals(lmm1_sv)
 plot(supervein_lmm1)
 #there is deviation for expected distrubution 
 #simulation outliers are highlighted as red stars. data points that are outside the range of simulated values. 
-#fit doesn't look aweome which is expected - indicates this is not a good way to handle data. 
+#fit doesn't look aweome which is expected - indicates this is not a good way to handle data.
+summary(lmm1_sv)
+#genes have effect which is what we would expect. Interesting that sex does as overall wing size has been scaled for, and even more interesting that interaction between background and sex has effect (meaning effect of sex behaves differently in background). But we need to compare magnitudes now. 
+ 
 #inference
 library(car)
 Anova(lmm1_sv)
@@ -183,6 +184,7 @@ Supervein approach is not a good approach. This was anticipated but preformed as
 ```{r vein 2}
 gene1only$gene1 <- relevel(gene1only$gene1, "wt")
 library(lme4)
+library(glmmTMB)
 lmm1_L2s <- glmmTMB(L2s ~ background*gene1*sex + (1|rep), data = gene1only)
 summary(lmm1_L2s)
 Anova(lmm1_L2s)
@@ -217,6 +219,22 @@ emmip(lmm1_L5s, sex ~ background|gene1, CIs = T)
 ```
 
 ```{r bootie}
+
+bootie <- function(dat=gene1only, genename = "Egfr", vein = gene1only$L2s) {
+  new_dat <- gene1only[sample(nrow(gene1only), nrow(gene1only), replace = T),  ]
+  mod_new <- lm(vein ~ background*sex, 
+                data = new_dat,
+                subset = gene1only$gene1 == genename)
+  return(coef(mod_new))
+}
+
+
+coef_out <- replicate(n = 100, bootie())
+dim(coef_out)
+ratio_coef_f <- coef_out[2,]/coef_out[1,]
+quantile(ratio_coef_f, probs = c(0.5, 0.5, 0.95))
+ratio_coef_m <- coef_out[4,]/coef_out[3,]
+quantile(ratio_coef_m, probs = c(0.05, 0.5, 0.95))
 
 ```
 
@@ -276,10 +294,8 @@ bootiefunction_mlm <-  function(dat=gene1only, genename = "Egfr") {
   return(coef(mod_new))
 }
 
-
 coef_out <- replicate(n = 100, bootie())
 dim(coef_out)
-
 #l2
 ratio_coef_f_l2 <- coef_out[2,1,]/coef_out[1,1,]
 quantile(ratio_coef_f, probs = c(0.5, 0.5, 0.95))
@@ -302,5 +318,3 @@ ratio_coef_m_L3 <- coef_out[4,5,]/coef_out[3,5,]
 quantile(ratio_coef_m, probs = c(0.05, 0.5, 0.95))
 
 ```
-
-
