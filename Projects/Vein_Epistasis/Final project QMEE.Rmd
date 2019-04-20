@@ -134,6 +134,7 @@ save(wings,
 
 ```{r PCA}
 
+
 ```
 
 ##Supervein 
@@ -215,8 +216,14 @@ emmip(lmm1_L5s, sex ~ background|gene1, CIs = T)
 
 ```
 
+```{r bootie}
+
+```
+
+
 ##Mixed Model Approach 
 ```{r mixed model}
+
 
 ```
 
@@ -237,6 +244,7 @@ pairs(gene1only[, 8:11],
       pch = ".", gap = 0)
 
 
+library(car)
 scatterplotMatrix( ~ L2s + L3s + L4s + L5s | interaction(gene1, background), 
                    ellipse = TRUE, data = gene1only, gap = 0,
                    plot.points = T, pch = 20, cex  = 0.5)
@@ -245,7 +253,7 @@ scatterplotMatrix( ~ L2s + L3s + L4s + L5s | interaction(gene1, background),
 #check to see if the covariance matrix was not of full rank
 
 eig_vals <- svd(cov(gene1only[, 8:11]))$d
-
+eig_vals
 det(cov(gene1only[, 8:11]))
 
 mlm_fit1 <- lm(as.matrix(gene1only[,8:11]) ~ background*gene1*sex, data = gene1only)
@@ -258,8 +266,13 @@ summary(manova(mlm_fit1),
 
 Anova(mlm_fit1)
 
-coef(mlm_fit1)
+coef1 <- coef(mlm_fit1)
+
+mlm_coef_f <- coef1[9,1]/ coef1[3,1]
+mlm_coef_f
+
+mlm_coef_m <- coef1[20,1]/ coef1[15,1]
+mlm_coef_m
+
 ```
-
-
 
