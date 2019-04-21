@@ -507,40 +507,27 @@ conf_mm_m(dat = gene1only_long, genename = "Aos", fun = bootie_mm)
 
 
 ##Multivariate 
-
 ```{r multivariate}
 #variance covariance matrix 
-
 cov(gene1only[ ,13:16])
-
 #visual variance covariance matrix
 pairs(gene1only[, 13:16],
       pch = ".", gap = 0)
-
-
 scatterplotMatrix( ~ L2s + L3s + L4s + L5s | interaction(gene1, background), 
                    ellipse = TRUE, data = gene1only, gap = 0,
                    plot.points = T, pch = 20, cex  = 0.5)
-
 #examine the eigenvalues of the covariance matri - you don't want really small values
 #check to see if the covariance matrix was not of full rank
-
 eig_vals <- svd(cov(gene1only[, 13:16]))$d
 eig_vals
 det(cov(gene1only[, 13:16]))
-
 mlm_fit1 <- lm(as.matrix(gene1only[,13:16]) ~ background*gene1*sex, data = gene1only)
 class(mlm_fit1)
-
 summary(manova(mlm_fit1))
-
 summary(manova(mlm_fit1), 
         test = "Wilks")
-
 Anova(mlm_fit1)
-
 coef1 <- coef(mlm_fit1)
-
 bootiefunction_mlm <-  function(dat=gene1only, genename = "Egfr") {
   new_dat <- gene1only[sample(nrow(gene1only), nrow(gene1only), replace = T),  ]
   mod_new <- lm(as.matrix(new_dat[,13:16]) ~ background*sex, 
@@ -548,30 +535,28 @@ bootiefunction_mlm <-  function(dat=gene1only, genename = "Egfr") {
                 subset = gene1only$gene1 == genename)
   return(coef(mod_new))
 }
-
-coef_out <- replicate(n = 100, bootie())
-dim(coef_out)
+coef_out_mlm <- replicate(n = 100, bootiefunction_mlm())
+dim(coef_out_mlm)
 #l2
-ratio_coef_f_l2 <- coef_out[2,1,]/coef_out[1,1,]
-quantile(ratio_coef_f, probs = c(0.5, 0.5, 0.95))
-ratio_coef_m_L2 <- coef_out[4,1,]/coef_out[3,1,]
-quantile(ratio_coef_m, probs = c(0.05, 0.5, 0.95))
+ratio_coef_f_l2 <- coef_out_mlm[2,1,]/coef_out_mlm[1,1,]
+quantile(ratio_coef_f_l2, probs = c(0.5, 0.5, 0.95))
+ratio_coef_m_L2 <- coef_out_mlm[4,1,]/coef_out_mlm[3,1,]
+quantile(ratio_coef_m_L2, probs = c(0.05, 0.5, 0.95))
 #L3
-ratio_coef_f_l3 <- coef_out[2,2,]/coef_out[1,2,]
-quantile(ratio_coef_f, probs = c(0.5, 0.5, 0.95))
-ratio_coef_m_L3 <- coef_out[4,2,]/coef_out[3,2,]
-quantile(ratio_coef_m, probs = c(0.05, 0.5, 0.95))
+ratio_coef_f_L3 <- coef_out_mlm[2,2,]/coef_out_mlm[1,2,]
+quantile(ratio_coef_f_L3, probs = c(0.5, 0.5, 0.95))
+ratio_coef_m_L3 <- coef_out_mlm[4,2,]/coef_out_mlm[3,2,]
+quantile(ratio_coef_m_L3, probs = c(0.05, 0.5, 0.95))
 #L4
-ratio_coef_f_l3 <- coef_out[2,3,]/coef_out[1,3,]
-quantile(ratio_coef_f, probs = c(0.5, 0.5, 0.95))
-ratio_coef_m_L3 <- coef_out[4,3,]/coef_out[3,3,]
-quantile(ratio_coef_m, probs = c(0.05, 0.5, 0.95))
+ratio_coef_f_L4 <- coef_out_mlm[2,3,]/coef_out_mlm[1,3,]
+quantile(ratio_coef_f_L4, probs = c(0.5, 0.5, 0.95))
+ratio_coef_m_L4 <- coef_out_mlm[4,3,]/coef_out_mlm[3,3,]
+quantile(ratio_coef_m_L4, probs = c(0.05, 0.5, 0.95))
 #L5
-ratio_coef_f_l3 <- coef_out[2,5,]/coef_out[1,5,]
-quantile(ratio_coef_f, probs = c(0.5, 0.5, 0.95))
-ratio_coef_m_L3 <- coef_out[4,5,]/coef_out[3,5,]
-quantile(ratio_coef_m, probs = c(0.05, 0.5, 0.95))
-
+ratio_coef_f_L5 <- coef_out_mlm[2,4,]/coef_out_mlm[1,4,]
+quantile(ratio_coef_f_L5, probs = c(0.5, 0.5, 0.95))
+ratio_coef_m_L5 <- coef_out_mlm[4,4,]/coef_out_mlm[3,4,]
+quantile(ratio_coef_m_L5, probs = c(0.05, 0.5, 0.95))
 ```
 
 
@@ -579,3 +564,4 @@ For this assignment, we took four diffrent approaches to answer the same problem
 Using PC analysis, we were able to demonstrate a diffrence between the two backgrounds by clustering of the PCs. However, our model for this analysis was not perfect and would have to be improved upon before any firm conclusions can be made. That being said, this was an efficent way to gather the varriance captured but all 4 measured veins and only need to do a single analysis on PC1 to explain most of the caputred varriation. 
 We also tried to add all veins together to create a 'supervein', using the assumption that changes to vein length of all four veins would be corrolatated. This was not sucessful because our assumption was not correct. Insted, we chose to fit a model to each vein seperatley. This was able to produce an answer that we could then inturput in the context of our biological question. However, this approach was quite cumbersome. 
 We then fit a model using each vein as a measurement for an individual. This was simlilar to the above approach but allowed us to fit the model for all the veins at the same time as we do not care about changes to individual veins, just the overall effect. This model also produced a result that was easy to understand with less code than the above model. Although, this gave conflicting results to the other two tests. I'm not sure if this is a problem in the code or a diffrent approach giving a diffrent answer. 
+We lastly fit a model using a multivariate approach to predict the vein length for each vein. This allows for us to model differences in vein length with muliple correlated response factors ( veins 2 -5). Multivariate approaches have been shown to be better than fitting a single model for each response variable and we could address not only how big an effect is but how similar is it in each vein. However, this wasn't a powerful advantage for this project as we were more concerned if there was an overall effect of background dependence and not how this effect impacted each vein individually and comparisons between the veins.A downside to this approach is the outputs can be hard to interpret.
