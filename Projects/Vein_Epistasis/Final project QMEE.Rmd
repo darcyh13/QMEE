@@ -1,3 +1,4 @@
+
 ---
 title: "Final Project"
 output: pdf_document
@@ -25,13 +26,11 @@ PC_plot <- function(dat = gene1_combined, x = wings_combined$PC1, y = wings_comb
   ggplot(dat, aes(x = x, y = y, col = background, shape = sex)) +
     geom_point(alpha = 0.4) 
 }
-
 size_cor <- function(dat = gene1_combined, PC = wings_combined$PC1) {
   ggplot(dat, aes(x = WL, y = PC, col = background)) +
     geom_point(alpha = 0.4) +
     geom_smooth(method = lm)
 }
-
 bootie <- function(dat=gene1only, genename = "Egfr", vein = gene1only$L2s) {
   new_dat <- dat[sample(nrow(dat), nrow(dat), replace = T),  ]
   mod_new <- lm(vein ~ background*sex, 
@@ -39,7 +38,6 @@ bootie <- function(dat=gene1only, genename = "Egfr", vein = gene1only$L2s) {
                 subset = gene1only$gene1 == genename)
   return(coef(mod_new))
 }
-
 bootie_mm <- function(dat=gene1only_long, genename = "Egfr") {
   new_dat <- dat[sample(nrow(dat), nrow(dat), replace = T),  ]
   mod_new <- lm(scalelength ~ vein:background*sex, 
@@ -47,7 +45,6 @@ bootie_mm <- function(dat=gene1only_long, genename = "Egfr") {
                 subset = gene1only$gene1 == genename)
   return(coef(mod_new))
 }
-
 bootie_mlm <-  function(dat=gene1only, genename = "Egfr") {
   new_dat <- gene1only[sample(nrow(gene1only), nrow(gene1only), replace = T),  ]
   mod_new <- lm(as.matrix(new_dat[,13:16]) ~ background*sex, 
@@ -55,7 +52,6 @@ bootie_mlm <-  function(dat=gene1only, genename = "Egfr") {
                 subset = gene1only$gene1 == genename)
   return(coef(mod_new))
 }
-
 conf_bootie_f <- function(dat = gene1only, genename = "Egfr", vein = gene1only$L2s, fun = bootie){
   coef_out <- replicate(n = 100, fun(dat = dat, genename = genename, vein = vein))
   ratio_coef_f <- coef_out[2,]/coef_out[1,]
@@ -67,8 +63,6 @@ conf_bootie_m <- function(dat = gene1only, genename = "Egfr", vein = gene1only$L
   ratio_coef_m <- coef_out[4,]/coef_out[3,]
   quantile(ratio_coef_m, probs = c(0.05, 0.5, 0.95))
 }
-
-
 conf_mm_f <- function(dat = gene1only, genename = "Egfr", fun = bootie){
   coef_out <- replicate(n = 100, fun(dat = dat, genename = genename))
   ratio_coef_f <- coef_out[3:5]/coef_out[7:9]
@@ -81,7 +75,6 @@ conf_mm_m <- function(dat = gene1only, genename = "Egfr", fun = bootie){
   CI_m <- quantile(ratio_coef_m, probs = c(0.05, 0.5, 0.95))
   print(CI_m)
 }
-
 ```
 
 # Vein Epistasis 
@@ -131,7 +124,7 @@ Egfr = epidermal growth factor receptor
 ##Cleandata 
 
 ```{r clean}
-Vein_epistasis <- read_csv("~/Dropbox/KatiePelletier/statsProjectStuff/RhomboidEpistasisWingMeasures_Fixes_2019.csv")
+Vein_epistasis <- read_csv("RhomboidEpistasisWingMeasures_Fixes_2019.csv")
 #Change second gene to say wt if it does not have a second mutation -> get rid of NA in this column 
 Vein_epistasis$gene2[is.na(Vein_epistasis$gene2)] <- "wt"
 #change relevant columns to factors 
@@ -139,7 +132,6 @@ columns_to_factors <- c("background", "gene1", "gene2", "rhomboid", "sex", "indi
 Vein_epistasis[,columns_to_factors] <- lapply(Vein_epistasis[,columns_to_factors], as.factor)
 #omit NAs - indicates dead flies 
 Vein_epistasis <- na.omit(Vein_epistasis)
-
 #checking for any obvious outliers
 #hist
 Vein_epistasis %>%
@@ -148,50 +140,38 @@ Vein_epistasis %>%
   ggplot(aes(value)) +
   facet_wrap(~ key, scales = "free") +
   geom_histogram()
-
 #might be outliers in L5 and WL 
-
 #boxplot for L5
 (ggplot(Vein_epistasis,aes(gene1, L5))
   + geom_boxplot()
   + stat_sum(colour="darkgray",alpha=0.5)
   + scale_size(breaks=1:2, range=c(3,6))
 )
-
 #remove outlier 
 Vein_epistasis<- subset(Vein_epistasis, Vein_epistasis[11]<5)
-
 #double check outlier has been removed 
-
 (ggplot(Vein_epistasis,aes(gene1, L5))
   + geom_boxplot()
   + stat_sum(colour="darkgray",alpha=0.5)
   + scale_size(breaks=1:2, range=c(3,6))
 )
 #boxplot for WL
-
 (ggplot(Vein_epistasis,aes(gene1, WL))
   + geom_boxplot()
   + stat_sum(colour="darkgray",alpha=0.5)
   + scale_size(breaks=1:2, range=c(3,6))
 )
-
 #remove outlier 
-
 Vein_epistasis<- subset(Vein_epistasis, Vein_epistasis[12]>4)
-
 #double check outlier has been removed 
-
 (ggplot(Vein_epistasis,aes(gene1, WL))
   + geom_boxplot()
   + stat_sum(colour="darkgray",alpha=0.5)
   + scale_size(breaks=1:2, range=c(3,6))
 )
 #For some reason all the lenghts were created as factors and not numberic variables. 
-
 Veins_numeric <- c("L2", "L3", "L4", "L5", "WL")
 Vein_epistasis[,Veins_numeric] <- lapply(Vein_epistasis[,Veins_numeric], as.numeric)
-
 #scale vein lengths by overall wing lengths 
 Vein_epistasis_scale <- (Vein_epistasis
   %>% mutate(L2s = L2/WL)
@@ -199,14 +179,10 @@ Vein_epistasis_scale <- (Vein_epistasis
   %>% mutate(L4s = L4/WL)
   %>% mutate(L5s = L5/WL)
 )
-
 wings <- Vein_epistasis_scale
-
 #We are choosing to simplify our analysis by only looking at interaction between rho and one gene (gene1 in dataset). Because of this, we want the gene2 position to always be wildtype
 gene1only <- subset(wings, gene2 == "wt")
-
 #We don't need to write out the data in this case, but will keep the code to do so 
-
 #write.csv(Vein_epistasis, file ="Vein_epistasis_clean.csv")
 #save(wings, 
 #     file = "clean_epistasis.rda")
@@ -221,45 +197,33 @@ gene1only <- subset(wings, gene2 == "wt")
 #Using the scaled values because allometric effects have been controled for. 
 #Decided to leave the scaling set as false (defult) because I had already scaled all the vein lengths to the length of the wing.
 #I did also run these tests with the resacling step in the PC decomposition and the same pattrens were observed.
-
-
 gene1PCs <- prcomp(gene1only[,13:16], scale. = F)
 gene1_combined <- data.frame(gene1only, gene1PCs$x[,1:4])
-
 #Scree plot for the PCs is not particularly infomative because it is unscaled, looking at the summary is easier.
 plot(gene1PCs)
 summary(gene1PCs)
-
 #We also want to look at the loadings for the PCs
 #It looks like the genes are not corrolated with eachother, indicating that the supervein analysis is probably not the best choice. We also show this below when we try to do it. 
 gene1PCs$rotation
-
 #This is also clear when the PCs are plotted against one another. 
 #This function plots the specified PCs with colour indicating the background and shape indicating sex
-
 #There is a seperation based on background, but not on sex. 
 PC_plot(x = gene1_combined$PC1, y = gene1_combined$PC2)
 PC_plot(x = gene1_combined$PC2, y = gene1_combined$PC3)
 PC_plot(x = gene1_combined$PC3, y = gene1_combined$PC4)
-
 #I don't expect any PC to be particularly corrolated with size because we scaled the vein length relitive to overall wing length but I want to check
-
 #Ore has a positive slope, but the data has a large spread so I'm not going to worry too much 
 #This only looks like there is a pattren for PC1
 size_cor(PC = gene1_combined$PC1)
 size_cor(PC = gene1_combined$PC2)
 size_cor(PC = gene1_combined$PC3)
 size_cor(PC = gene1_combined$PC4)
-
 ##Now we want to use the PCs in place of vein length for the model. 
 ##Going to use PC1 as the response variable because It captures the greatest proportion of the varriance and shows the most clear distiction between backgrounds
-
 #Staring with the model we will use below in our analysis.
 #This is the maximal model
 #lmer gave a signular fit. 
 PC1_mod <-  glmmTMB(PC1 ~ background*gene1*sex + (1|rep), data = gene1_combined)
-
-
 PC1_resid <- simulateResiduals(PC1_mod)
 plot(PC1_resid)
 #This looks bad.
@@ -268,52 +232,37 @@ summary(PC1_mod)
 #However, there was no model with a better fit that we could find. 
 #This is proabably because the distribution of PC1 is skewed and does not fit our assumption of normality. 
 hist(gene1_combined$PC1)
-
 #For now, we are going to continue with this model, although we can not put a lot of stock in the outcome. 
 #We could revisit this using a baysian framework in the future to model these effects. 
-
 #In this case, there is no significant interaction with sex, this indicates that we may be able to take sex out of our analysis to simplify it. 
 Anova(PC1_mod)
-
 #Looking at the contrast between the backgrounds, based on the genes. 
 pairwise_PC1 <- emmeans(PC1_mod, pairwise ~ background|gene1)
-
 #plotting the marginal means, faceted by gene, with 95% confidence intrivals. 
 #These are clearly diffrent, although this does not give a magnitude of effect 
 plot(pairwise_PC1)
-
 #Here we are able to see the magnitude of diffrence between the two means. 
 #This still doesn't have a CI on the magnitude of diffrence but can use SE as a proxy of a measure of varriance. 
-
 pairwise_PC1
-
 ##Going to reuse the bootstraping function we wrote to compare coefficents to compare the magnitude of change for PC1
-
 #This is diffrent from one, therefore the magnitude of the episatic effect between Egfr and rho is diffrent in the Ore and Sam background for females. 
 conf_bootie_f(dat = gene1_combined, genename = "Egfr", vein = gene1_combined$PC1, fun = bootie)
-
 #This is not diffrent from one, therefore the magnitude of the episatic effect between Egfr and rho is not in the Ore and Sam background for males. These conf. intrivals are also huge
 conf_bootie_m(dat = gene1_combined, genename = "Egfr", vein = gene1_combined$PC1, fun = bootie)
-
 #This is not what we predicted, but it is an interesting biological result that can be followed up on. Why do we observe sexual dimporphism in background dependance of epistatic interactions?
-
 #I will look at the other genes as well. 
 #No change here 
 conf_bootie_f(dat = gene1_combined, genename = "S", vein = gene1_combined$PC1, fun = bootie)
 conf_bootie_m(dat = gene1_combined, genename = "S", vein = gene1_combined$PC1, fun = bootie)
-
 #No change 
 conf_bootie_f(dat = gene1_combined, genename = "Spi", vein = gene1_combined$PC1, fun = bootie)
 conf_bootie_m(dat = gene1_combined, genename = "Spi", vein = gene1_combined$PC1, fun = bootie)
-
 #No change
 conf_bootie_f(dat = gene1_combined, genename = "Bs", vein = gene1_combined$PC1, fun = bootie)
 conf_bootie_m(dat = gene1_combined, genename = "Bs", vein = gene1_combined$PC1, fun = bootie)
-
 #No change
 conf_bootie_f(dat = gene1_combined, genename = "Aos", vein = gene1_combined$PC1, fun = bootie)
 conf_bootie_m(dat = gene1_combined, genename = "Aos", vein = gene1_combined$PC1, fun = bootie)
-
 #Although this model isn't great and I wouldn't put too much stock in these results as they are right now. 
 ```
 
@@ -330,10 +279,8 @@ ggplot(data = gene1only, aes(x=gene1, y=supervein)) + geom_boxplot(aes(fill=back
 hist(wings$supervein)
 qqnorm(wings$supervein)
 #mixed linear model using glmmTMB package. Singular fit when using lmer. 
-
 lmm1_sv <- glmmTMB(supervein ~ background*gene1*sex + (1|rep), data = gene1only)
 #check model 
-
 supervein_lmm1 <- simulateResiduals(lmm1_sv)
 plot(supervein_lmm1)
 #there is deviation for expected distrubution 
@@ -345,9 +292,7 @@ summary(lmm1_sv)
 #inference
 Anova(lmm1_sv)
 #strong support there is sign effect of background and gene1 on supervein (This is predicted). What we care about is there looks to be significant effect of interaction of gene1 and background and background and sex. 
-
 #visual of effects
-
 (eff <- allEffects(lmm1_sv))
 plot(eff)
  
@@ -359,37 +304,28 @@ Supervein approach is not a good approach. This was anticipated but preformed as
 
 ###Vein 2
 ```{r vein 2}
-
 lmm1_L2s <- glmmTMB(L2s ~ background*gene1*sex + (1|rep), data = gene1only)
 summary(lmm1_L2s)
 Anova(lmm1_L2s)
-
 emmip(lmm1_L2s, sex ~ background|gene1, CIs = T)
-
-
 #A comparison of the two coeficents between backgrounds. Females and males are considered seperatley 
 #Functions can be found at the top of this document. Bootstrap analysis with 100 replicates to get CI. 
 #A value of 1 would mean there is no change in magnitude between the two backgrounds. 
-
 #Change for females but not males for the interaction between Egfr and rho 
-conf_bootie_f(dat = gene1_only, genename = "Egfr", vein = gene1_combined$L2s, fun = bootie)
-conf_bootie_m(dat = gene1_only, genename = "Egfr", vein = gene1_combined$L2s, fun = bootie)
-
+conf_bootie_f(dat = gene1only, genename = "Egfr", vein = gene1_combined$L2s, fun = bootie)
+conf_bootie_m(dat = gene1only, genename = "Egfr", vein = gene1_combined$L2s, fun = bootie)
 #Again, a change for females but not for males for S. 
-conf_bootie_f(dat = gene1_only, genename = "S", vein = gene1_combined$L2s, fun = bootie)
-conf_bootie_m(dat = gene1_only, genename = "S", vein = gene1_combined$L2s, fun = bootie)
-
+conf_bootie_f(dat = gene1only, genename = "S", vein = gene1_combined$L2s, fun = bootie)
+conf_bootie_m(dat = gene1only, genename = "S", vein = gene1_combined$L2s, fun = bootie)
 #No change for Spi in either sex 
-conf_bootie_f(dat = gene1_only, genename = "Spi", vein = gene1_combined$L2s, fun = bootie)
-conf_bootie_m(dat = gene1_only, genename = "Spi", vein = gene1_combined$L2s, fun = bootie)
-
+conf_bootie_f(dat = gene1only, genename = "Spi", vein = gene1_combined$L2s, fun = bootie)
+conf_bootie_m(dat = gene1only, genename = "Spi", vein = gene1_combined$L2s, fun = bootie)
 #No change for Bs
-conf_bootie_f(dat = gene1_only, genename = "Bs", vein = gene1_combined$L2s, fun = bootie)
-conf_bootie_m(dat = gene1_only, genename = "Bs", vein = gene1_combined$L2s, fun = bootie)
-
+conf_bootie_f(dat = gene1only, genename = "Bs", vein = gene1_combined$L2s, fun = bootie)
+conf_bootie_m(dat = gene1only, genename = "Bs", vein = gene1_combined$L2s, fun = bootie)
 #No change for Aos
-conf_bootie_f(dat = gene1_only, genename = "Aos", vein = gene1_combined$L2s, fun = bootie)
-conf_bootie_m(dat = gene1_only, genename = "Aos", vein = gene1_combined$L2s, fun = bootie)
+conf_bootie_f(dat = gene1only, genename = "Aos", vein = gene1_combined$L2s, fun = bootie)
+conf_bootie_m(dat = gene1only, genename = "Aos", vein = gene1_combined$L2s, fun = bootie)
 ```
 
 ###vein 3
@@ -398,12 +334,10 @@ lmm1_L3s <- glmmTMB(L3s ~ background*gene1*sex + (1|rep), data = gene1only)
 summary(lmm1_L3s)
 Anova(lmm1_L3s)
 emmip(lmm1_L3s, sex ~ background|gene1, CIs = T)
-
 #We could do the same tests as above to compare effect sizes, but again, this would be a lot of the same code over and over again. Insted we will just compare for egfr for the rest of this section. 
-
 #No change in either sex, not what we saw for L2. 
-conf_bootie_f(dat = gene1_only, genename = "Egfr", vein = gene1_combined$L3s, fun = bootie)
-conf_bootie_m(dat = gene1_only, genename = "Egfr", vein = gene1_combined$L3s, fun = bootie)
+conf_bootie_f(dat = gene1only, genename = "Egfr", vein = gene1_combined$L3s, fun = bootie)
+conf_bootie_m(dat = gene1only, genename = "Egfr", vein = gene1_combined$L3s, fun = bootie)
 ```
 
 ###vein 4
@@ -412,10 +346,9 @@ lmm1_L4s <- glmmTMB(L4s ~ background*gene1*sex + (1|rep), data = gene1only)
 summary(lmm1_L4s)
 Anova(lmm1_L4s)
 emmip(lmm1_L4s, sex ~ background|gene1, CIs = T)
-
 #Again, no change. 
-conf_bootie_f(dat = gene1_only, genename = "Egfr", vein = gene1_combined$L4s, fun = bootie)
-conf_bootie_m(dat = gene1_only, genename = "Egfr", vein = gene1_combined$L4s, fun = bootie)
+conf_bootie_f(dat = gene1only, genename = "Egfr", vein = gene1_combined$L4s, fun = bootie)
+conf_bootie_m(dat = gene1only, genename = "Egfr", vein = gene1_combined$L4s, fun = bootie)
 ```
 
 ###vein 5
@@ -424,26 +357,22 @@ lmm1_L5s <- glmmTMB(L5s ~ background*gene1*sex + (1|rep), data = gene1only)
 summary(lmm1_L5s)
 Anova(lmm1_L5s)
 emmip(lmm1_L5s, sex ~ background|gene1, CIs = T)
-
 #No change again. 
-conf_bootie_f(dat = gene1_only, genename = "Egfr", vein = gene1_combined$L5s, fun = bootie)
-conf_bootie_m(dat = gene1_only, genename = "Egfr", vein = gene1_combined$L5s, fun = bootie)
+conf_bootie_f(dat = gene1only, genename = "Egfr", vein = gene1_combined$L5s, fun = bootie)
+conf_bootie_m(dat = gene1only, genename = "Egfr", vein = gene1_combined$L5s, fun = bootie)
 ```
 
 
 ##Multiple measurements approach 
 ```{r mixed model}
 ##Going to try to fix a model using each vein length as a repeated measure on each individual
-
 ##first, I need to modify the data so that each individual has 4 vein measurements. 
 gene1only_long <- (gene1only
           %>% select(-c("L2","L3","L4","L5", "WL", "supervein")) #removes the unsacled values so I can't mess up and use these also removing the supervein. 
           %>% mutate(units=factor(1:n())) #each individual becomes a unit 
           %>% gather(vein, scalelength, -c(units,rep, sex,background, gene1, gene2, individual, rhomboid))
 )
-
 gene1only_long$vein <- as.factor(gene1only_long$vein)
-
 #Fitting the model (same as one used above)
 mod1_S <- lmer(scalelength ~ vein:(background*gene1*sex)-1 + 
                  (1|rep) + (vein - 1|units), 
@@ -451,55 +380,42 @@ mod1_S <- lmer(scalelength ~ vein:(background*gene1*sex)-1 +
                                                             optimizer="bobyqa",
                                                             check.nobs.vs.nlev="ignore",
                                                             check.nobs.vs.nRE="ignore"))
-
 #No sigular fit, good! 
 all(abs(getME(mod1_S,"theta"))>1e-4)
-
 #Looking for corolations in the data 
 #This is more evidence for why supervein was a bad idea, there is a moderate assosoiation between L3 and L4 but no other veins. 
 corplot <- VarCorr(mod1_S)
 diag(corplot$units) <- diag(corplot$units)+sigma(mod1_S)^2
 corrplot.mixed(cov2cor(corplot$units),upper="ellipse")
-
 #creating a coefficent plot 
 cc <- tidy(mod1_S,effect="fixed") %>%
   separate(term,into=c("vein", "fixeff"),extra="merge",
                   remove=FALSE)
-
-
 #This is really hard to look at 
 ##I think the most important take awawy here is that the 'epistatic' term is diffrent for each vein. 
 #This was shown more clearly with the corr plot. 
 dwplot(cc)+facet_wrap(~fixeff,scale="free",ncol=4)+
   geom_vline(xintercept=0,lty=2)
-
 #Here all the genes seem to follow the same pattren of effects across the sexes and the backgrounds. 
 eff_lmm <- allEffects(mod1_S)
 plot(eff_lmm)
-
 #Inferance
 #This tells us that the interaction between vein, background, gene and sex is significant. Although, this tells us nothing about the magnitude of change between the backgrounds. 
 Anova(mod1_S)
-
 #To compare sizes of effects, we would have to do a bootstrap analyis similar to what was done above, however, this would take longer and be more complicated because of the number of factors included in this model.
 #This takes the average of L2, L3, and L4 coefficents. L5 is removed from this analysis because something weird is going on with it. 
-
 #Change for males but not females. 
 conf_mm_f(dat = gene1only_long, genename = "Egfr", fun = bootie_mm)
 conf_mm_m(dat = gene1only_long, genename = "Egfr", fun = bootie_mm)
-
 #Change for males but not females. 
 conf_mm_f(dat = gene1only_long, genename = "S", fun = bootie_mm)
 conf_mm_m(dat = gene1only_long, genename = "S", fun = bootie_mm)
-
 #No change. 
 conf_mm_f(dat = gene1only_long, genename = "Spi", fun = bootie_mm)
 conf_mm_m(dat = gene1only_long, genename = "Spi", fun = bootie_mm)
-
 #No change.
 conf_mm_f(dat = gene1only_long, genename = "Bs", fun = bootie_mm)
 conf_mm_m(dat = gene1only_long, genename = "Bs", fun = bootie_mm)
-
 #No change.
 conf_mm_f(dat = gene1only_long, genename = "Aos", fun = bootie_mm)
 conf_mm_m(dat = gene1only_long, genename = "Aos", fun = bootie_mm)
@@ -542,21 +458,26 @@ ratio_coef_f_l2 <- coef_out_mlm[2,1,]/coef_out_mlm[1,1,]
 quantile(ratio_coef_f_l2, probs = c(0.5, 0.5, 0.95))
 ratio_coef_m_L2 <- coef_out_mlm[4,1,]/coef_out_mlm[3,1,]
 quantile(ratio_coef_m_L2, probs = c(0.05, 0.5, 0.95))
+#change is females and no change in males. 
+
 #L3
 ratio_coef_f_L3 <- coef_out_mlm[2,2,]/coef_out_mlm[1,2,]
 quantile(ratio_coef_f_L3, probs = c(0.5, 0.5, 0.95))
 ratio_coef_m_L3 <- coef_out_mlm[4,2,]/coef_out_mlm[3,2,]
 quantile(ratio_coef_m_L3, probs = c(0.05, 0.5, 0.95))
+#change in females and no change in males
 #L4
 ratio_coef_f_L4 <- coef_out_mlm[2,3,]/coef_out_mlm[1,3,]
 quantile(ratio_coef_f_L4, probs = c(0.5, 0.5, 0.95))
 ratio_coef_m_L4 <- coef_out_mlm[4,3,]/coef_out_mlm[3,3,]
 quantile(ratio_coef_m_L4, probs = c(0.05, 0.5, 0.95))
+#change in females and no change in males. 
 #L5
 ratio_coef_f_L5 <- coef_out_mlm[2,4,]/coef_out_mlm[1,4,]
 quantile(ratio_coef_f_L5, probs = c(0.5, 0.5, 0.95))
 ratio_coef_m_L5 <- coef_out_mlm[4,4,]/coef_out_mlm[3,4,]
 quantile(ratio_coef_m_L5, probs = c(0.05, 0.5, 0.95))
+#change in females and no changes in males. 
 ```
 
 
@@ -565,3 +486,5 @@ Using PC analysis, we were able to demonstrate a diffrence between the two backg
 We also tried to add all veins together to create a 'supervein', using the assumption that changes to vein length of all four veins would be corrolatated. This was not sucessful because our assumption was not correct. Insted, we chose to fit a model to each vein seperatley. This was able to produce an answer that we could then inturput in the context of our biological question. However, this approach was quite cumbersome. 
 We then fit a model using each vein as a measurement for an individual. This was simlilar to the above approach but allowed us to fit the model for all the veins at the same time as we do not care about changes to individual veins, just the overall effect. This model also produced a result that was easy to understand with less code than the above model. Although, this gave conflicting results to the other two tests. I'm not sure if this is a problem in the code or a diffrent approach giving a diffrent answer. 
 We lastly fit a model using a multivariate approach to predict the vein length for each vein. This allows for us to model differences in vein length with muliple correlated response factors ( veins 2 -5). Multivariate approaches have been shown to be better than fitting a single model for each response variable and we could address not only how big an effect is but how similar is it in each vein. However, this wasn't a powerful advantage for this project as we were more concerned with the overall effect of background dependence and not how this effect impacted each vein individually and comparisons between the veins.A downside to this approach is the outputs can be hard to interpret.
+
+After preforming these 4 approaches it does looks like the magnitude of genetic interactions does change in a background dependent manner. Although these approaches did give different results, it seems that there is a change in magnitude of the epistatic interactions between ORE and SAM in females for some veins and for some genetic combinations. 
