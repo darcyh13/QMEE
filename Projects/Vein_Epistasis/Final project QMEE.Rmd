@@ -1,4 +1,3 @@
-
 ---
 title: "Final Project"
 output: pdf_document
@@ -18,7 +17,7 @@ library(car) #Stats
 library(effects) #to plot some model effects 
 library(dotwhisker) #creating dot whisker plots 
 library(broom) #some tidying functions used for code from course website. 
-library(corrplot) #looking at corralations 
+library(corrplot) #looking at correlations 
 ```
 
 ```{r required functions}
@@ -84,17 +83,19 @@ A genetic interaction or epistasis can be defined in its simplest form as relati
 For this work, we will use this term to describe the interaction of genes at different loci that affect a phenotype.  Specifically, the interaction of a secondary mutation that enhances a focal mutation. 
 
 ## Scientific Question: 
-##Does the magnitude of genetic interactions change in a background dependent manner?
+
+**Does the magnitude of genetic interactions change in a background dependent manner?**
+
+**BMB**: I would avoid "does it change?" and focus on "how does it change"?
 
 ### What does this mean? 
 
-The phenotypic consequences of individual mutations are modulated by the wild-type genetic background in which they occur.The influence of wild-type genetic backgrounds also extends to interactions among mutations, but this needs to be explored further. 
+The phenotypic consequences of individual mutations are modulated by the wild-type genetic background in which they occur. The influence of wild-type genetic backgrounds also extends to interactions among mutations, but this needs to be explored further. 
 
 
 ### How are we approaching this problem? 
 
-Examining epistatic interactions are experimentally, statistically, and computationally challenging and unfortunately there is no agreed upon way on how to handle such challenges. As such, our goal for this project is to use 4 different approaches to analyse our scientific question. This allows for us to explore different methods and see which we think is the best approach to answer our question. The best meaning taking into consideration overall fit of models, efficiency, output that allows for interpretation and so on. 
-
+Examining epistatic interactions is experimentally, statistically, and computationally challenging and unfortunately there is no agreed upon way on how to handle such challenges. As such, our goal for this project is to use 4 different approaches to analyse our scientific question. This allows for us to explore different methods and see which we think is the best approach to answer our question. The best meaning taking into consideration overall fit of models, efficiency, output that allows for interpretation and so on. 
 
 ### Dataset 
 
@@ -107,7 +108,9 @@ Bs = blistered,                                 Spi = spitz,
 Egfr = epidermal growth factor receptor
 
 ##Statistical Question:
-## Is there variance in vein length that can not be explained by the effect of background and the effect of gene1 and/or gene2? 
+
+
+**Is there variance in vein length that can not be explained by the effect of background and the effect of gene1 and/or gene2?**
 
 ###Choices we made: 
 
@@ -121,7 +124,7 @@ Egfr = epidermal growth factor receptor
 3. Mixed model approach - a mixed model with a repeated measure of each vein for each individual.
 4. Multivariate mixed model - this approach is similar to approach 3. We want to compare results and ask which model is easier to interpret in the context of our biological question. 
 
-##Cleandata 
+## Clean data 
 
 ```{r clean}
 Vein_epistasis <- read_csv("RhomboidEpistasisWingMeasures_Fixes_2019.csv")
@@ -169,9 +172,12 @@ Vein_epistasis<- subset(Vein_epistasis, Vein_epistasis[12]>4)
   + stat_sum(colour="darkgray",alpha=0.5)
   + scale_size(breaks=1:2, range=c(3,6))
 )
-#For some reason all the lenghts were created as factors and not numberic variables. 
+
+## BMB: nice!
+#For some reason all the lengths were created as factors and not numeric variables. 
 Veins_numeric <- c("L2", "L3", "L4", "L5", "WL")
 Vein_epistasis[,Veins_numeric] <- lapply(Vein_epistasis[,Veins_numeric], as.numeric)
+## BMB can use which(is.na(as.numeric(...))) to find out which entries were problematic
 #scale vein lengths by overall wing lengths 
 Vein_epistasis_scale <- (Vein_epistasis
   %>% mutate(L2s = L2/WL)
@@ -180,7 +186,7 @@ Vein_epistasis_scale <- (Vein_epistasis
   %>% mutate(L5s = L5/WL)
 )
 wings <- Vein_epistasis_scale
-#We are choosing to simplify our analysis by only looking at interaction between rho and one gene (gene1 in dataset). Because of this, we want the gene2 position to always be wildtype
+#We are choosing to simplify our analysis by only looking at interaction between rho and one gene (gene1 in dataset). Because of this, we want the gene2 position to always be wild type
 gene1only <- subset(wings, gene2 == "wt")
 #We don't need to write out the data in this case, but will keep the code to do so 
 #write.csv(Vein_epistasis, file ="Vein_epistasis_clean.csv")
@@ -192,64 +198,85 @@ gene1only <- subset(wings, gene2 == "wt")
 
 ```{r PCA}
 #I want to do a PC analysis on the vein data to ask the question:
-#is it a good idea to consider each vein seperatley? Can we consider them all together as one 'supervein' 
-#If there is not a lot of varriation within PCs, we can conclude that all four veins respond in the same way to a genetic pertubation
-#Using the scaled values because allometric effects have been controled for. 
-#Decided to leave the scaling set as false (defult) because I had already scaled all the vein lengths to the length of the wing.
-#I did also run these tests with the resacling step in the PC decomposition and the same pattrens were observed.
+#is it a good idea to consider each vein separately? Can we consider them all together as one 'supervein' 
+#If there is not a lot of variation within PCs, we can conclude that all four veins respond in the same way to a genetic perturbation
+#Using the scaled values because allometric effects have been controlled for. 
+#Decided to leave the scaling set as false (default) because I had already scaled all the vein lengths to the length of the wing.
+#I did also run these tests with the rescaling step in the PC decomposition and the same patterns were observed.
 gene1PCs <- prcomp(gene1only[,13:16], scale. = F)
 gene1_combined <- data.frame(gene1only, gene1PCs$x[,1:4])
-#Scree plot for the PCs is not particularly infomative because it is unscaled, looking at the summary is easier.
+#Scree plot for the PCs is not particularly informative because it is unscaled, looking at the summary is easier.
 plot(gene1PCs)
 summary(gene1PCs)
 #We also want to look at the loadings for the PCs
-#It looks like the genes are not corrolated with eachother, indicating that the supervein analysis is probably not the best choice. We also show this below when we try to do it. 
+#It looks like the genes are not correlated with each other, indicating that the supervein analysis is probably not the best choice. We also show this below when we try to do it. 
 gene1PCs$rotation
 #This is also clear when the PCs are plotted against one another. 
 #This function plots the specified PCs with colour indicating the background and shape indicating sex
-#There is a seperation based on background, but not on sex. 
+#There is a separation based on background, but not on sex. 
 PC_plot(x = gene1_combined$PC1, y = gene1_combined$PC2)
 PC_plot(x = gene1_combined$PC2, y = gene1_combined$PC3)
 PC_plot(x = gene1_combined$PC3, y = gene1_combined$PC4)
-#I don't expect any PC to be particularly corrolated with size because we scaled the vein length relitive to overall wing length but I want to check
+#I don't expect any PC to be particularly correlated with size because we scaled the vein length relative to overall wing length but I want to check
 #Ore has a positive slope, but the data has a large spread so I'm not going to worry too much 
-#This only looks like there is a pattren for PC1
+#This only looks like there is a pattern for PC1
 size_cor(PC = gene1_combined$PC1)
 size_cor(PC = gene1_combined$PC2)
 size_cor(PC = gene1_combined$PC3)
 size_cor(PC = gene1_combined$PC4)
+
+## BMB: linear regression isn't the best way to look at *bivariate*
+##  relationships; need "model II regression" or plot eigenvector 1
+
 ##Now we want to use the PCs in place of vein length for the model. 
-##Going to use PC1 as the response variable because It captures the greatest proportion of the varriance and shows the most clear distiction between backgrounds
+##Going to use PC1 as the response variable because It captures the greatest proportion of the variance and shows the most clear distinction between backgrounds
 #Staring with the model we will use below in our analysis.
 #This is the maximal model
-#lmer gave a signular fit. 
+#lmer gave a singular fit. 
 PC1_mod <-  glmmTMB(PC1 ~ background*gene1*sex + (1|rep), data = gene1_combined)
 PC1_resid <- simulateResiduals(PC1_mod)
 plot(PC1_resid)
 #This looks bad.
-#Looked at the residual varriance for the random effect in our model, it is small so that is probably not the reason our fit looks so bad. 
+#Looked at the residual variance for the random effect in our model, it is small so that is probably not the reason our fit looks so bad. 
 summary(PC1_mod)
 #However, there was no model with a better fit that we could find. 
-#This is proabably because the distribution of PC1 is skewed and does not fit our assumption of normality. 
+##This is probably because the distribution of PC1 is skewed and does not fit our assumption of normality.
+
+## BMB: this is indeed pretty bad.  However, note that distribution of residuals is more *bimodal* than skewed (Q-Q plot matches OK in both tails, diverges in the middle)
+
+library(broom.mixed)
+aa <- augment(PC1_mod)
+ggplot(aa,aes(.fitted,.resid))+geom_point()+geom_smooth()
+ggplot(aa,aes(.fitted,sqrt(abs(.resid))))+
+          geom_point(aes(colour=interaction(background,sex)))+
+  geom_smooth(aes(group=background))
+
+## BMB: try accounting for heteroscedasticity by background ...
+PC1_mod2 <-  glmmTMB(PC1 ~ background*gene1*sex + (1|rep),
+                     disp = ~background,
+                     data = gene1_combined)
+
 hist(gene1_combined$PC1)
 #For now, we are going to continue with this model, although we can not put a lot of stock in the outcome. 
-#We could revisit this using a baysian framework in the future to model these effects. 
-#In this case, there is no significant interaction with sex, this indicates that we may be able to take sex out of our analysis to simplify it. 
+#We could revisit this using a Bayesian framework in the future to model these effects. 
+##In this case, there is no significant interaction with sex, this indicates that we may be able to take sex out of our analysis to simplify it.
+## BMB: DON'T DO THIS. Data-based model simplification screws up inference.
 Anova(PC1_mod)
 #Looking at the contrast between the backgrounds, based on the genes. 
 pairwise_PC1 <- emmeans(PC1_mod, pairwise ~ background|gene1)
-#plotting the marginal means, faceted by gene, with 95% confidence intrivals. 
-#These are clearly diffrent, although this does not give a magnitude of effect 
+#plotting the marginal means, faceted by gene, with 95% confidence intervals. 
+#These are clearly different, although this does not give a magnitude of effect 
 plot(pairwise_PC1)
-#Here we are able to see the magnitude of diffrence between the two means. 
-#This still doesn't have a CI on the magnitude of diffrence but can use SE as a proxy of a measure of varriance. 
+#Here we are able to see the magnitude of difference between the two means. 
+#This still doesn't have a CI on the magnitude of difference but can use SE as a proxy of a measure of variance. 
 pairwise_PC1
-##Going to reuse the bootstraping function we wrote to compare coefficents to compare the magnitude of change for PC1
-#This is diffrent from one, therefore the magnitude of the episatic effect between Egfr and rho is diffrent in the Ore and Sam background for females. 
+##Going to reuse the bootstrapping function we wrote to compare coefficients to compare the magnitude of change for PC1
+##This is different from one, therefore the magnitude of the epistatic effect between Egfr and rho is different in the Ore and Sam background for females.
+## BMB: !! avoid statements like "this is different" or "this is not different" -- use language of CLARITY.
 conf_bootie_f(dat = gene1_combined, genename = "Egfr", vein = gene1_combined$PC1, fun = bootie)
-#This is not diffrent from one, therefore the magnitude of the episatic effect between Egfr and rho is not in the Ore and Sam background for males. These conf. intrivals are also huge
+#This is not different from one, therefore the magnitude of the epistatic effect between Egfr and rho is not in the Ore and Sam background for males. These conf. intervals are also huge
 conf_bootie_m(dat = gene1_combined, genename = "Egfr", vein = gene1_combined$PC1, fun = bootie)
-#This is not what we predicted, but it is an interesting biological result that can be followed up on. Why do we observe sexual dimporphism in background dependance of epistatic interactions?
+#This is not what we predicted, but it is an interesting biological result that can be followed up on. Why do we observe sexual dimorphism in background dependence of epistatic interactions?
 #I will look at the other genes as well. 
 #No change here 
 conf_bootie_f(dat = gene1_combined, genename = "S", vein = gene1_combined$PC1, fun = bootie)
@@ -266,7 +293,7 @@ conf_bootie_m(dat = gene1_combined, genename = "Aos", vein = gene1_combined$PC1,
 #Although this model isn't great and I wouldn't put too much stock in these results as they are right now. 
 ```
 
-##Supervein 
+## Supervein 
 
 ```{r Supervein}
 #make new column with total vein length
@@ -283,37 +310,41 @@ lmm1_sv <- glmmTMB(supervein ~ background*gene1*sex + (1|rep), data = gene1only)
 #check model 
 supervein_lmm1 <- simulateResiduals(lmm1_sv)
 plot(supervein_lmm1)
-#there is deviation for expected distrubution 
+#there is deviation for expected distribution 
 #simulation outliers are highlighted as red stars. data points that are outside the range of simulated values. 
-#fit doesn't look aweome which is expected - indicates this is not a good way to handle data.
+#fit doesn't look awesome which is expected - indicates this is not a good way to handle data.
 summary(lmm1_sv)
 #genes have effect which is what we would expect. Interesting that sex does as overall wing size has been scaled for, and even more interesting that interaction between background and sex has effect (meaning effect of sex behaves differently in background). But we need to compare magnitudes now. 
  
 #inference
 Anova(lmm1_sv)
-#strong support there is sign effect of background and gene1 on supervein (This is predicted). What we care about is there looks to be significant effect of interaction of gene1 and background and background and sex. 
+##strong support there is sign effect of background and gene1 on supervein (This is predicted). What we care about is there looks to be significant effect of interaction of gene1 and background and background and sex.
+## BMB: why chase significance?
 #visual of effects
 (eff <- allEffects(lmm1_sv))
 plot(eff)
  
 ```
 
-Supervein approach is not a good approach. This was anticipated but preformed as an exploratory exercise. 
+Supervein approach is not a good approach. This was anticipated but performed as an exploratory exercise. 
 
-##What does model liner mixed model look like for each vein individually? This is a substitute for supervein approach. 
+**What does model linear mixed model look like for each vein individually? This is a substitute for supervein approach**
 
 ###Vein 2
+
 ```{r vein 2}
 lmm1_L2s <- glmmTMB(L2s ~ background*gene1*sex + (1|rep), data = gene1only)
 summary(lmm1_L2s)
 Anova(lmm1_L2s)
 emmip(lmm1_L2s, sex ~ background|gene1, CIs = T)
-#A comparison of the two coeficents between backgrounds. Females and males are considered seperatley 
+#A comparison of the two coefficients between backgrounds. Females and males are considered separately 
 #Functions can be found at the top of this document. Bootstrap analysis with 100 replicates to get CI. 
 #A value of 1 would mean there is no change in magnitude between the two backgrounds. 
 #Change for females but not males for the interaction between Egfr and rho 
 conf_bootie_f(dat = gene1only, genename = "Egfr", vein = gene1_combined$L2s, fun = bootie)
 conf_bootie_m(dat = gene1only, genename = "Egfr", vein = gene1_combined$L2s, fun = bootie)
+## **BMB: AVOID doing lots and lots of significance tests.  You end up making lots of comparisons (inflating experimentwise error rate), *and* fishing for "sig" vs "not sig". AVOID statements like "there is a change for females but not for males" when what you mean "is clearly different ... is not clearly different ..." (see Gelman paper referenced in class)
+
 #Again, a change for females but not for males for S. 
 conf_bootie_f(dat = gene1only, genename = "S", vein = gene1_combined$L2s, fun = bootie)
 conf_bootie_m(dat = gene1only, genename = "S", vein = gene1_combined$L2s, fun = bootie)
@@ -334,7 +365,7 @@ lmm1_L3s <- glmmTMB(L3s ~ background*gene1*sex + (1|rep), data = gene1only)
 summary(lmm1_L3s)
 Anova(lmm1_L3s)
 emmip(lmm1_L3s, sex ~ background|gene1, CIs = T)
-#We could do the same tests as above to compare effect sizes, but again, this would be a lot of the same code over and over again. Insted we will just compare for egfr for the rest of this section. 
+#We could do the same tests as above to compare effect sizes, but again, this would be a lot of the same code over and over again. Instead we will just compare for egfr for the rest of this section. 
 #No change in either sex, not what we saw for L2. 
 conf_bootie_f(dat = gene1only, genename = "Egfr", vein = gene1_combined$L3s, fun = bootie)
 conf_bootie_m(dat = gene1only, genename = "Egfr", vein = gene1_combined$L3s, fun = bootie)
@@ -368,7 +399,7 @@ conf_bootie_m(dat = gene1only, genename = "Egfr", vein = gene1_combined$L5s, fun
 ##Going to try to fix a model using each vein length as a repeated measure on each individual
 ##first, I need to modify the data so that each individual has 4 vein measurements. 
 gene1only_long <- (gene1only
-          %>% select(-c("L2","L3","L4","L5", "WL", "supervein")) #removes the unsacled values so I can't mess up and use these also removing the supervein. 
+          %>% select(-c("L2","L3","L4","L5", "WL", "supervein")) #removes the unscaled values so I can't mess up and use these also removing the supervein. 
           %>% mutate(units=factor(1:n())) #each individual becomes a unit 
           %>% gather(vein, scalelength, -c(units,rep, sex,background, gene1, gene2, individual, rhomboid))
 )
@@ -380,30 +411,30 @@ mod1_S <- lmer(scalelength ~ vein:(background*gene1*sex)-1 +
                                                             optimizer="bobyqa",
                                                             check.nobs.vs.nlev="ignore",
                                                             check.nobs.vs.nRE="ignore"))
-#No sigular fit, good! 
+#No singular fit, good! 
 all(abs(getME(mod1_S,"theta"))>1e-4)
-#Looking for corolations in the data 
-#This is more evidence for why supervein was a bad idea, there is a moderate assosoiation between L3 and L4 but no other veins. 
+#Looking for correlations in the data 
+#This is more evidence for why supervein was a bad idea, there is a moderate association between L3 and L4 but no other veins. 
 corplot <- VarCorr(mod1_S)
 diag(corplot$units) <- diag(corplot$units)+sigma(mod1_S)^2
 corrplot.mixed(cov2cor(corplot$units),upper="ellipse")
-#creating a coefficent plot 
+#creating a coefficient plot 
 cc <- tidy(mod1_S,effect="fixed") %>%
   separate(term,into=c("vein", "fixeff"),extra="merge",
                   remove=FALSE)
 #This is really hard to look at 
-##I think the most important take awawy here is that the 'epistatic' term is diffrent for each vein. 
+##I think the most important take away here is that the 'epistatic' term is different for each vein. 
 #This was shown more clearly with the corr plot. 
 dwplot(cc)+facet_wrap(~fixeff,scale="free",ncol=4)+
   geom_vline(xintercept=0,lty=2)
-#Here all the genes seem to follow the same pattren of effects across the sexes and the backgrounds. 
+#Here all the genes seem to follow the same pattern of effects across the sexes and the backgrounds. 
 eff_lmm <- allEffects(mod1_S)
 plot(eff_lmm)
-#Inferance
+#Inference
 #This tells us that the interaction between vein, background, gene and sex is significant. Although, this tells us nothing about the magnitude of change between the backgrounds. 
 Anova(mod1_S)
-#To compare sizes of effects, we would have to do a bootstrap analyis similar to what was done above, however, this would take longer and be more complicated because of the number of factors included in this model.
-#This takes the average of L2, L3, and L4 coefficents. L5 is removed from this analysis because something weird is going on with it. 
+#To compare sizes of effects, we would have to do a bootstrap analysis similar to what was done above, however, this would take longer and be more complicated because of the number of factors included in this model.
+#This takes the average of L2, L3, and L4 coefficients. L5 is removed from this analysis because something weird is going on with it. 
 #Change for males but not females. 
 conf_mm_f(dat = gene1only_long, genename = "Egfr", fun = bootie_mm)
 conf_mm_m(dat = gene1only_long, genename = "Egfr", fun = bootie_mm)
@@ -431,8 +462,9 @@ pairs(gene1only[, 13:16],
       pch = ".", gap = 0)
 scatterplotMatrix( ~ L2s + L3s + L4s + L5s | interaction(gene1, background), 
                    ellipse = TRUE, data = gene1only, gap = 0,
-                   plot.points = T, pch = 20, cex  = 0.5)
-#examine the eigenvalues of the covariance matri - you don't want really small values
+                  plot.points = T, pch = 20, cex  = 0.5)
+
+#examine the eigenvalues of the covariance matrix - you don't want really small values
 #check to see if the covariance matrix was not of full rank
 eig_vals <- svd(cov(gene1only[, 13:16]))$d
 eig_vals
@@ -481,10 +513,10 @@ quantile(ratio_coef_m_L5, probs = c(0.05, 0.5, 0.95))
 ```
 
 
-For this assignment, we took four diffrent approaches to answer the same problem to investigate the efficency and ease of understanding our results. 
-Using PC analysis, we were able to demonstrate a diffrence between the two backgrounds by clustering of the PCs. However, our model for this analysis was not perfect and would have to be improved upon before any firm conclusions can be made. That being said, this was an efficent way to gather the varriance captured but all 4 measured veins and only need to do a single analysis on PC1 to explain most of the caputred varriation. 
-We also tried to add all veins together to create a 'supervein', using the assumption that changes to vein length of all four veins would be corrolatated. This was not sucessful because our assumption was not correct. Insted, we chose to fit a model to each vein seperatley. This was able to produce an answer that we could then inturput in the context of our biological question. However, this approach was quite cumbersome. 
-We then fit a model using each vein as a measurement for an individual. This was simlilar to the above approach but allowed us to fit the model for all the veins at the same time as we do not care about changes to individual veins, just the overall effect. This model also produced a result that was easy to understand with less code than the above model. Although, this gave conflicting results to the other two tests. I'm not sure if this is a problem in the code or a diffrent approach giving a diffrent answer. 
-We lastly fit a model using a multivariate approach to predict the vein length for each vein. This allows for us to model differences in vein length with muliple correlated response factors ( veins 2 -5). Multivariate approaches have been shown to be better than fitting a single model for each response variable and we could address not only how big an effect is but how similar is it in each vein. However, this wasn't a powerful advantage for this project as we were more concerned with the overall effect of background dependence and not how this effect impacted each vein individually and comparisons between the veins.A downside to this approach is the outputs can be hard to interpret.
+For this assignment, we took four different approaches to answer the same problem to investigate the efficiency and ease of understanding our results. 
+Using PC analysis, we were able to demonstrate a difference between the two backgrounds by clustering of the PCs. However, our model for this analysis was not perfect and would have to be improved upon before any firm conclusions can be made. That being said, this was an efficient way to gather the variance captured but all 4 measured veins and only need to do a single analysis on PC1 to explain most of the captured variation. 
+We also tried to add all veins together to create a 'supervein', using the assumption that changes to vein length of all four veins would be correlated. This was not successful because our assumption was not correct. Instead, we chose to fit a model to each vein separately. This was able to produce an answer that we could then interpret in the context of our biological question. However, this approach was quite cumbersome. 
+We then fit a model using each vein as a measurement for an individual. This was similar to the above approach but allowed us to fit the model for all the veins at the same time as we do not care about changes to individual veins, just the overall effect. This model also produced a result that was easy to understand with less code than the above model. Although, this gave conflicting results to the other two tests. I'm not sure if this is a problem in the code or a different approach giving a different answer. 
+We lastly fit a model using a multivariate approach to predict the vein length for each vein. This allows for us to model differences in vein length with multiple correlated response factors ( veins 2 -5). Multivariate approaches have been shown to be better than fitting a single model for each response variable and we could address not only how big an effect is but how similar is it in each vein. However, this wasn't a powerful advantage for this project as we were more concerned with the overall effect of background dependence and not how this effect impacted each vein individually and comparisons between the veins. A downside to this approach is the outputs can be hard to interpret.
 
-After preforming these 4 approaches it does looks like the magnitude of genetic interactions does change in a background dependent manner. Although these approaches did give different results, it seems that there is a change in magnitude of the epistatic interactions between ORE and SAM in females for some veins and for some genetic combinations. 
+After performing these 4 approaches it does looks like the magnitude of genetic interactions does change in a background dependent manner. Although these approaches did give different results, it seems that there is a change in magnitude of the epistatic interactions between ORE and SAM in females for some veins and for some genetic combinations. 
