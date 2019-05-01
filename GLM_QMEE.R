@@ -1,5 +1,7 @@
 
 library("tidyverse")
+library("dotwhisker") ## JD: Please include all packages that you use
+library(ResourceSelection) ## Also, it's good to put them at the top.
 
 Genetic_Background_Interactions <- read_csv("GeneticBackgroundVeinMutantInteractionsFinal.csv")
 
@@ -37,6 +39,8 @@ curve(dgamma(x, scale=1.5, shape=2),from=0, to=15, main="Gamma
 distribution")
 
 #looks like gamma might be a good fit
+# JD: fun, but remember you're trying to match the conditional distribution
+# Not the unconditional
 
 Genetic_Ore_Interactions$genotype <- relevel(Genetic_Ore_Interactions$genotype, "wt.rho")
 glm_L2 <- glm(L2 ~ genotype + sex + genotype:sex , data= Genetic_Ore_Interactions,  family = Gamma(link = "log") )
@@ -50,6 +54,7 @@ summary(glm_L2)
 #S.rho genotype effects L2 signficantly negatively compared to wt.rho genotype- does it act as an enhancer? 
 #Aos.rho genotype effects L2 signficantly positively compared to wt.rho genotype - does aos suppress rho? 
 #if flies are male it effects L2 negatively 
+# JD: Good
 
 #value of 8.7438 on 474 degrees of freedom. Including sex and genotype reduced deviance to 4.6330 on 463 degrees of freedom. 
 
@@ -59,12 +64,13 @@ dwplot(glm_L2)
 acf(residuals(glm_L2))
 
 #install.packages("ResourceSelection")
-library(ResourceSelection)
 
 hoslem.test(Genetic_Ore_Interactions$L2, fitted(glm_L2))
 
 #Model looks to fit because there is no significant difference between the model and the observed data - p-value of 1
 
+# JD: This is the fundamental fallacy. Significance is what we see, not what is there. Never be encouraged by a high P value (or never admit it if you are).
 
+# Grade 2.1/3 (good)
 
 
