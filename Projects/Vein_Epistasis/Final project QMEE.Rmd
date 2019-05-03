@@ -51,6 +51,8 @@ bootie_mlm <-  function(dat=gene1only, genename = "Egfr") {
                 subset = gene1only$gene1 == genename)
   return(coef(mod_new))
 }
+
+## JD: Try to avoid repeating code
 conf_bootie_f <- function(dat = gene1only, genename = "Egfr", vein = gene1only$L2s, fun = bootie){
   coef_out <- replicate(n = 100, fun(dat = dat, genename = genename, vein = vein))
   ratio_coef_f <- coef_out[2,]/coef_out[1,]
@@ -112,6 +114,8 @@ Egfr = epidermal growth factor receptor
 
 **Is there variance in vein length that can not be explained by the effect of background and the effect of gene1 and/or gene2?**
 
+JD: yes, there is. Ask "can we see?" or better, "how much is there?"
+
 ###Choices we made: 
 
 * All vein lengths are scaled by overall wing length. 
@@ -150,6 +154,7 @@ Vein_epistasis %>%
   + stat_sum(colour="darkgray",alpha=0.5)
   + scale_size(breaks=1:2, range=c(3,6))
 )
+## JD: why the ugly code? [11]. Use the name.
 #remove outlier 
 Vein_epistasis<- subset(Vein_epistasis, Vein_epistasis[11]<5)
 #double check outlier has been removed 
@@ -243,6 +248,7 @@ summary(PC1_mod)
 ##This is probably because the distribution of PC1 is skewed and does not fit our assumption of normality.
 
 ## BMB: this is indeed pretty bad.  However, note that distribution of residuals is more *bimodal* than skewed (Q-Q plot matches OK in both tails, diverges in the middle)
+## JD: Yeah, that's a cool QQ plot. Not sure where the KS P value comes from. I don't think it's your fault, but it upsets me.
 
 library(broom.mixed)
 aa <- augment(PC1_mod)
@@ -277,6 +283,12 @@ conf_bootie_f(dat = gene1_combined, genename = "Egfr", vein = gene1_combined$PC1
 #This is not different from one, therefore the magnitude of the epistatic effect between Egfr and rho is not in the Ore and Sam background for males. These conf. intervals are also huge
 conf_bootie_m(dat = gene1_combined, genename = "Egfr", vein = gene1_combined$PC1, fun = bootie)
 #This is not what we predicted, but it is an interesting biological result that can be followed up on. Why do we observe sexual dimorphism in background dependence of epistatic interactions?
+## JD: No. What you have are _similar_ estimates for males and females.
+## The males are noisier for a reason that you are not sure of.
+## That does NOT mean you've found sexual dimorphism.
+## Also, why are you comparing something that can be either positive or negative to 1 rather than zero? Are you sure you have the right scale?
+## Usually if ratios are the right move, it's because everything is positive
+
 #I will look at the other genes as well. 
 #No change here 
 conf_bootie_f(dat = gene1_combined, genename = "S", vein = gene1_combined$PC1, fun = bootie)
